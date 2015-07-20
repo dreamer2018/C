@@ -46,7 +46,7 @@ void init_net()
 
     if(ioctl(sock,SIOCGIFADDR,&ifr)<0)
     {
-       // perror("ioctl");
+        perror("ioctl");
     }
     memcpy(&sin,&ifr.ifr_addr,sizeof(sin));
     g_ipaddr=sin.sin_addr.s_addr;
@@ -54,7 +54,7 @@ void init_net()
 
     if(ioctl(sock,SIOCGIFBRDADDR,&ifr)<0)
     {
-       // perror("ioctl");
+        perror("ioctl");
     }
     memcpy(&sin,&ifr.ifr_addr,sizeof(sin));
     g_broadcast_ipaddr=sin.sin_addr.s_addr;
@@ -62,7 +62,7 @@ void init_net()
 
     if(ioctl(sock,SIOCGIFNETMASK,&ifr)<0)
     {
-       // perror("ioctl");
+        perror("ioctl");
     }
     memcpy(&sin,&ifr.ifr_addr,sizeof(sin));
     g_subnetmask=sin.sin_addr.s_addr;
