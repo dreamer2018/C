@@ -46,14 +46,14 @@ int  main()
 						printf("\t\t**        A.演出厅管理                      **\n");
 						printf("\t\t**        B.剧目管理                        **\n");
 						printf("\t\t**        R. 返回　                         **\n");
-						printf("\t\t==============================================\033[0m\n");	
+						printf("\t\t==============================================\033[0m\n");
 						printf("Please Input :");
 						scanf("%c",&sign);
 						getchar();
 						switch(sign)
 						{
 							case 'a'  : ;
-							case 'A'  :		
+							case 'A'  :
 												Studio_UI_MgtEntry();
 												getchar();
 												break;
@@ -65,7 +65,7 @@ int  main()
 							case 'R' :
 							case 'r'  :
 												i=0;
-												break;					
+												break;
 						}
 				}while(i);
 			}
