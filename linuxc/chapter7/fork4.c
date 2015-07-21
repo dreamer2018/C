@@ -12,18 +12,15 @@ int main()
         case 0:
             while(1)
             {
-                printf("I am Child Process myid=%d myParentid=%d\n",getpid(),getppid());
-                break;
+                printf("A Background Process PID=%d ParentPID=%d\n",getpid(),getppid());
                 sleep(3);
             }
         case -1:
             printf("create process error");
-            break;
             exit(-1);
         default:
             printf("I am Parent Process myid=%d\n",getpid());
-            break;
             exit(0);
     }
-    exit(0);
+    return 0;
 }
