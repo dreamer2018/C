@@ -10,27 +10,9 @@
 #include<dirent.h>
 #include<grp.h>
 #include<pwd.h>
+#define MAX_LINE 80
 #define MAX_STRING 100   //最长文件名
 
-/*
-#define List_Init(list, list_node_t) {                  \
-        list=(list_node_t*)malloc(sizeof(list_node_t)); \
-        (list)->next=(list)->prev=list;                 \
-}
-
-
-#define List_Add_Head(list, newNode) {           \
-        (newNode)->next=(list)->next;           \
-        (list)->next->prev=newNode;             \
-        (newNode)->prev=(list);                 \
-        (list)->next=newNode;                   \
-}
-typedef struct file
-{
-    char name[MAX_STRING];
-    struct file *next;
-}file_node_t;
-*/
 //函数声明部分
 
 void my_stat(int flag,char *name);
@@ -44,51 +26,13 @@ void print_gro_name(gid_t st_gid);
 void print_time(time_t st_time);
 int display(int flag,char *path);
 
-/*
-int my_readir(const char *path)
-{
-    DIR *dir;
-    struct dirent *ptr;
-    if((dir=opendir(path))==NULL)
-    {
-        perror("opendir");
-        return -1;
-    }
-    while((ptr=readdir(dir))!=NULL)
-    {
-        printf("%s",)
-    }
-    closedir(dir);
-
-    return 0;
-}
-
-void list_sort(file_node_t *head)
-{
-    int i=0;
-    file_node_t *p,*q;
-    p=head;
-    while()
-    while(p->next!=NULL)
-    {
-        q=p->next;
-        if(strcmp(q->name,q->next->name))
-        {
-            p->next=q->next;
-            q->next=p->next->next
-            p->next->next=q;
-        }
-        p=p->next;
-    }
-}
-*/
 
 int display(int flag,char *path)
 {
     int i=-1,j,len,count=0;//len=strlen(path);
     DIR *dir;
     struct dirent *ptr;
-    char filename[256][100],temp[100];
+    char filename[256][MAX_STRING],temp[MAX_STRING];
     if((dir=opendir(path))==NULL)
     {
         perror("opendir");
@@ -151,7 +95,8 @@ void my_stat(int flag,char *name)
     }
     else
     {
-        printf("%-10s\t",name);
+        printf("%                                                                                                                                      s\t",name);
+
     }
 }
 char *month_analy(int month)
@@ -302,36 +247,57 @@ void print_gro_name(gid_t st_gid) //通过gid输出用户组名a
 int main(int argc,char **argv)
 {
     int flag;          //flag=-1 :ls        flag=0 :ls -l   flag=1 ls -a  flag=2  ls -al/-la
-    if(1==argc)
+    if(1==argc) //analysis: ls
     {
         flag=-1;
         display(flag,".");
         return 0;
     }
-    else if(argc==2 && !strcmp("-l",argv[1]))
+    else if(argc==2 && !strcmp("-l",argv[1]))  //analysis: ls -l
     {
         flag=0;
         display(flag,".");
     }
-    else if(argc==2 && !strcmp("-a",argv[1]))
+    else if(argc==2 && !strcmp("-a",argv[1]))  //analysis: ls -a
     {
         flag=1;
         display(flag,".");
     }
-    else if(argc==2 && !strcmp("-al",argv[1]))
+    else if(argc==2 && !strcmp("-al",argv[1])) //analysis: ls -al
     {
         flag=2;
         display(flag,".");
     }
-    else if(argc==2 && !strcmp("-la",argv[1]))
+    else if(argc==2 && !strcmp("-la",argv[1])) //analysis : ls -la
     {
         flag=2;
         display(flag,".");
     }
-    else if(argc==2)
+    else if(argc==2) //analysis: ls file
     {
         flag=-1;
         display(flag,argv[1]);
+    }
+    else if(argc==3 && !strcmp("-l",argv[1]))  //analysis: ls -l file
+    {
+        flag=0;
+        display(flag,argv[2]);
+    }
+    else if(argc==3 && !strcmp("-a",argv[1]))  //analysis : ls -a file
+    {
+        flag=1;
+        display(flag,argv[2]);
+
+    }
+    else if(argc==3 && !strcmp("-al",argv[1])) //analysis :ls -al file
+    {
+        flag=2;
+        display(flag,argv[2]);
+    }
+    else if(argc==3 && !strcmp("-la",argv[1])) //analysis :ls -la file
+    {
+        flag=2;
+        display(flag,argv[2]);
     }
     return 0;
 }
