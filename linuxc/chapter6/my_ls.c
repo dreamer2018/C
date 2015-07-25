@@ -64,7 +64,6 @@ void print_usr_name(struct stat *buf);
 void print_gro_name(struct stat *buf);
 void print_time(time_t st_time);
 int display(int flag,char *path);
-//int display_R(int flag,char *path);
 void sort(int count,str_node_t *head);
 int print_info_srv(int count,int flag,str_node_t *head);
 
@@ -112,7 +111,7 @@ int print_info_srv(int count,int flag,str_node_t *head)
             if(!strcmp(p->str,".")||!strcmp(p->str,".."))
                 continue;
             my_stat(flag,p->str);
-            if(count==5)
+            if(i==count-1)
             {
                 printf("\n");
             }
