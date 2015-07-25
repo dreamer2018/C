@@ -11,8 +11,23 @@
 #include<grp.h>
 #include<pwd.h>
 #define MAX_LINE 80
-#define MAX_STRING 100   //最长文件名
+#define MAX_STRING 256   //最长文件名
 
+//链表头插法初始化
+#define List_Init(list,list_node_t){                     \
+    list=(list_node_t *)malloc(sizeof(list_node_t));    \
+    list->next=NULL;                                    \
+}
+//链表头插法宏定义
+#define List_AddHead(list,newNode){      \
+    newNode->next=list->next;           \
+    list->next=newNode;                 \
+}
+typedef struct str_sort
+{
+    char str[256];
+    struct str_sort *next;
+}str_node_t;
 //函数声明部分
 
 void my_stat(int flag,char *name);
@@ -25,14 +40,17 @@ void print_usr_name(uid_t st_uid);
 void print_gro_name(gid_t st_gid);
 void print_time(time_t st_time);
 int display(int flag,char *path);
-
+int display_R(char *path);
+void sort(int count,str_node_t *head);
+void print_info_srv(int count,int flag,str_node_t *head);
 
 int display(int flag,char *path)
 {
-    int i=-1,j,len,count=0;//len=strlen(path);
+    int i=0,j,count=0;
     DIR *dir;
     struct dirent *ptr;
-    char filename[256][MAX_STRING],temp[MAX_STRING];
+    str_node_t *newNode,*head;
+    List_Init(head,str_node_t);
     if((dir=opendir(path))==NULL)
     {
         perror("opendir");
@@ -41,40 +59,89 @@ int display(int flag,char *path)
     while((ptr=readdir(dir))!=NULL)
     {
         i++;
-        len=strlen(ptr->d_name);
-        strcpy(filename[i],ptr->d_name);
+        newNode=(str_node_t *)malloc(sizeof(str_node_t));
+        strcpy(newNode->str,ptr->d_name);
+        List_AddHead(head,newNode);
     }
     count=i;
+    print_info_srv(count,flag,head);
+    closedir(dir);
+}
+void print_info_srv(int count,int flag,str_node_t *head)
+{
+    int i;
+    str_node_t *p;
+    sort(count,head);
+    p=head;
     for(i=0;i<count;i++)
     {
-        for(j=0;j<count-i;j++)
-        {
-            if(strcmp(filename[j],filename[j+1])>0)
-            {
-                strcpy(temp,filename[j+1]);
-                temp[strlen(filename[j+1])]='\0';
-                strcpy(filename[j+1],filename[j]);
-                filename[j+1][strlen(filename[j])]='\0';
-                strcpy(filename[j],temp);
-                filename[j][strlen(temp)]='\0';
-            }
-        }
-    }
-    for(i=0;i<count;i++)
-    {
+        p=p->next;
         if(flag==-1 || flag==0)
         {
-            if(!strcmp(filename[i],".")||!strcmp(filename[i],".."))
+            if(!strcmp(p->str,".")||!strcmp(p->str,".."))
                 continue;
-            my_stat(flag,filename[i]);
+            my_stat(flag,p->str);
         }
         else
         {
-            my_stat(flag,filename[i]);
+            my_stat(flag,p->str);
         }
     }
     printf("\n");
+}
+
+void sort(int count,str_node_t *head)
+{
+    int i,j;
+    char temp[256];
+    str_node_t *p;
+    for(i=1;i<=count;i++)
+    {
+        p=head->next;
+        for(j=1;j<count;j++)
+        {
+            if(strcmp(p->str,p->next->str)>0)
+            {
+                strcpy(temp,p->str);
+                strcpy(p->str,p->next->str);
+                strcpy(p->next->str,temp);
+            }
+            p=p->next;
+        }
+    }
+}
+int display_R(char *path)
+{
+    int i=-1,j,len,count=0;
+    DIR *dir;
+    struct dirent *ptr;
+    struct stat buf;
+    if((dir=opendir(path))==NULL)
+    {
+        perror("opendir");
+        return -1;
+    }
+    while((ptr=readdir(dir))!=NULL)
+    {
+        my_stat(2,ptr->d_name);
+        lstat(ptr->d_name,&buf);
+        if(!strcmp(ptr->d_name,".")||!strcmp(ptr->d_name,".."))
+        {
+            continue;
+        }
+        if(S_ISDIR(buf.st_mode))
+        {
+            printf("%-15s",ptr->d_name);
+            display_R(ptr->d_name);
+        }
+        else
+        {
+            printf("%-15s",ptr->d_name);
+        }
+    }
+   // printf("\n");
     closedir(dir);
+    return 1;
 }
 void my_stat(int flag,char *name)
 {
@@ -95,8 +162,7 @@ void my_stat(int flag,char *name)
     }
     else
     {
-        printf("%                                                                                                                                      s\t",name);
-
+    printf("%-15s",name);
     }
 }
 char *month_analy(int month)
@@ -133,13 +199,30 @@ void print_time(time_t st_time)
 {
     struct tm p;
     gmtime_r(&st_time,&p);
-    if(p.tm_min<10)
+    printf(" %3s",month_analy(p.tm_mon));
+    if(p.tm_mday<10)
     {
-        printf(" %3s %2d %2d:0%d",month_analy(p.tm_mon),p.tm_mday,(p.tm_hour+8),p.tm_min);
+        printf(" 0%d",p.tm_mday);
     }
     else
     {
-        printf(" %3s %2d %2d:%2d",month_analy(p.tm_mon),p.tm_mday,(p.tm_hour+8),p.tm_min);
+        printf(" %2d",p.tm_mday);
+    }
+    if(p.tm_hour<2 || p.tm_hour>=23)
+    {
+        printf(" 0%d:",(p.tm_hour+8));
+    }
+    else
+    {
+        printf(" %2d:",p.tm_hour+8);
+    }
+    if(p.tm_min<10)
+    {
+        printf("0%d",p.tm_min);
+    }
+    else
+    {
+        printf("%2d",p.tm_min);
     }
 }
 void my_err(const char *err_string ,int line)
@@ -246,6 +329,7 @@ void print_gro_name(gid_t st_gid) //通过gid输出用户组名a
 }
 int main(int argc,char **argv)
 {
+    //display_R(argv[1]);
     int flag;          //flag=-1 :ls        flag=0 :ls -l   flag=1 ls -a  flag=2  ls -al/-la
     if(1==argc) //analysis: ls
     {
@@ -281,6 +365,7 @@ int main(int argc,char **argv)
     else if(argc==3 && !strcmp("-l",argv[1]))  //analysis: ls -l file
     {
         flag=0;
+      //  printf("%s",argv[2]);
         display(flag,argv[2]);
     }
     else if(argc==3 && !strcmp("-a",argv[1]))  //analysis : ls -a file
@@ -299,5 +384,14 @@ int main(int argc,char **argv)
         flag=2;
         display(flag,argv[2]);
     }
+    /*
+    else if(argc==2 && !strcmp("_R",argv[2]))
+    {
+        display_R("./");
+    }
+    else
+    {
+        printf("Not Support This Commond\n");
+    }*/
     return 0;
 }
