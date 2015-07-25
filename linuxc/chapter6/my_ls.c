@@ -87,7 +87,7 @@ int print_info_srv(int count,int flag,str_node_t *head)
         p=p->next;
         if(flag==-1 || flag==0)
         {
-            if(!strcmp(p->str,".")||!strcmp(p->str,".."))
+            if(!strcmp(p->str,".")||!strcmp(p->str,"..")||p->str[0]=='.')
                 continue;
             my_stat(flag,p->str);
             if(i==count-1)
@@ -309,34 +309,32 @@ void print_gro_name(struct stat *buf) //通过gid输出用户组名a
 }
 int main(int argc,char **argv)
 {
-   // display_R(2,argv[1]);
-
-    int flag;          //flag=-1 :ls        flag=0 :ls -l   flag=1 ls -a  flag=2  ls -al/-la
-    if(1==argc) //analysis: ls
+    int flag;           //flag=-1 [ls] flag=0 [ls -l]     flag=1 [ls -a]  flag=2  [ls -al/-la]
+    if(1==argc)         //analysis: ls
     {
         flag=-1;
-        display(flag,"./");
+        display(flag,".");
         return 0;
     }
     else if(argc==2 && !strcmp("-l",argv[1]))  //analysis: ls -l
     {
         flag=0;
-        display(flag,"./");
+        display(flag,".");
     }
     else if(argc==2 && !strcmp("-a",argv[1]))  //analysis: ls -a
     {
         flag=1;
-        display(flag,"./");
+        display(flag,".");
     }
     else if(argc==2 && !strcmp("-al",argv[1])) //analysis: ls -al
     {
         flag=2;
-        display(flag,"./");
+        display(flag,".");
     }
     else if(argc==2 && !strcmp("-la",argv[1])) //analysis : ls -la
     {
         flag=2;
-        display(flag,"./");
+        display(flag,".");
     }
     else if(argc==2) //analysis: ls file
     {
