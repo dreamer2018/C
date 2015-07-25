@@ -107,13 +107,13 @@ int display_R(char *path) //专为ls -R 设计的用于递归的函数
     {
         p=p->next;
         lstat(p->str,&buf);
-        if(!strcmp(p->str,".")||!strcmp(p->str,"..")||p->str[0]=='.')
+        if(!strcmp(p->str,".")||!strcmp(p->str,"..")||p->str[0]=='.')  //去除掉此文件夹下的. .. 和.开头的隐藏文件
         {
             continue;
         }
-        if(S_ISDIR(buf.st_mode))
+        if(S_ISDIR(buf.st_mode)) //判断是否为目录
         {
-            printf("\n\033[34m%s",cwd);
+            printf("\n\033[34m%s",cwd); //改变颜色为蓝色
             printf("%s/\033[0m\n",p->str);
             display_R(p->str);
         }
@@ -124,7 +124,7 @@ int display_R(char *path) //专为ls -R 设计的用于递归的函数
     }
     printf("\n");
     closedir(dir);
-    chdir(cwd);
+    chdir(cwd);  //切换回原路径
     return 1;
 }
 
