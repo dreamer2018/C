@@ -128,11 +128,11 @@ int display_R(char *path) //专为ls -R 设计的用于递归的函数
     return 1;
 }
 
-int print_info_srv(int count,int flag,str_node_t *head)
+int print_info_srv(int count,int flag,str_node_t *head)     //打印文件信息服务函数
 {
     int i;
     str_node_t *p;
-    sort(count,head);
+    sort(count,head);      //对文件名进行排序
     p=head;
     for(i=0;i<count;i++)
     {
@@ -156,7 +156,7 @@ int print_info_srv(int count,int flag,str_node_t *head)
     }
 }
 
-void sort(int count,str_node_t *head)
+void sort(int count,str_node_t *head) //文件名排序函数，使用的是冒牌排序法
 {
     int i,j;
     char temp[256];
@@ -177,7 +177,7 @@ void sort(int count,str_node_t *head)
     }
 }
 
-void my_stat(int flag,char *name)
+void my_stat(int flag,char *name)  //打印文件相关信息
 {
     struct stat buf;
     lstat(name,&buf);
@@ -213,7 +213,7 @@ void my_stat(int flag,char *name)
         }
     }
 }
-char *month_analy(int month)
+char *month_analy(int month)     //月份解析函数
 {
     switch(month)
     {
