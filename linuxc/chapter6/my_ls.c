@@ -430,17 +430,17 @@ int main(int argc,char **argv)
         flag=2;
         display(flag,argv[2]);
     }
-    else if(argc==2 && !strcmp("-R",argv[1]))
+    else if(argc==2 && !strcmp("-R",argv[1]))  //analyse: ls -R
     {
         display_R(".");
     }
-    else if(argc==3 && !strcmp("-R",argv[1]))
+    else if(argc==3 && !strcmp("-R",argv[1]))   //analyse : ls -R file
     {
         display_R(argv[2]);
     }
     else
     {
-        printf("Not Support This Commond\n");
+        printf("Not Support This Commond\n"); //与以上不匹配，报错
     }
     return 0;
 }
