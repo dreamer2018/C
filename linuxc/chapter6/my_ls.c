@@ -243,14 +243,14 @@ char *month_analy(int month)     //月份解析函数
             return "Dec";
     }
 }
-void print_time(time_t st_time)
+void print_time(time_t st_time) //日期解析函数
 {
     struct tm p;
     gmtime_r(&st_time,&p);
     printf(" %3s",month_analy(p.tm_mon));
-    if(p.tm_mday<10)
+    if(p.tm_mday<10) //小于十的前面补零
     {
-        printf(" 0%d",p.tm_mday);
+        printf(" 0%d",p.tm_mday); //小于十的前面补零
     }
     else
     {
@@ -258,7 +258,7 @@ void print_time(time_t st_time)
     }
     if(p.tm_hour<2 || p.tm_hour>=23)
     {
-        printf(" 0%d:",(p.tm_hour+8));
+        printf(" 0%d:",(p.tm_hour+8));  //此处系统使用的是国际标准时间，中国位于东八区，比标准时间早8个小时，故要加上八
     }
     else
     {
