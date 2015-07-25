@@ -68,7 +68,7 @@ int display(int flag,char *path)  //文件目录解析函数，获取当前目�
         i++;
         newNode=(str_node_t *)malloc(sizeof(str_node_t));
         strcpy(newNode->str,ptr->d_name);
-        List_AddHead(head,newNode);
+        List_AddHead(head,newNode); //头插法建立新链表
     }
     count=i;
     print_info_srv(count,flag,head);
@@ -76,7 +76,7 @@ int display(int flag,char *path)  //文件目录解析函数，获取当前目�
     chdir(cwd);
 }
 
-int display_R(char *path)
+int display_R(char *path) //专为ls -R 设计的用于递归的函数
 {
     int i=0,j,count=0;
     char cpath[256]="./";
