@@ -79,6 +79,7 @@ int display(int flag,char *path)
 int display_R(char *path)
 {
     int i=0,j,count=0;
+    char cpath[256]="./";
     DIR *dir;
     struct dirent *ptr;
     struct stat buf;
@@ -87,7 +88,7 @@ int display_R(char *path)
     chdir(path);
     str_node_t *newNode,*head,*p;
     List_Init(head,str_node_t);
-    if((dir=opendir(path))==NULL)
+    if((dir=opendir("./"))==NULL)
     {
         perror("opendir");
         return -1;
@@ -104,6 +105,11 @@ int display_R(char *path)
     p=head;
     for(i=0;i<count;i++)
     {
+        my_stat(-1,p->str);
+    }
+    p=head;
+    for(i=0;i<count;i++)
+    {
         p=p->next;
         lstat(p->str,&buf);
         if(!strcmp(p->str,".")||!strcmp(p->str,"..")||p->str[0]=='.')
@@ -112,11 +118,19 @@ int display_R(char *path)
         }
         if(S_ISDIR(buf.st_mode))
         {
+            printf("\n%s",cwd);
+            printf("%s\n",p->str);
             display_R(p->str);
         }
+        else
+        {
+            printf("%s\t",p->str);
+        }
     }
+    printf("\n");
     closedir(dir);
     chdir(cwd);
+    return 1;
 }
 
 int print_info_srv(int count,int flag,str_node_t *head)
@@ -183,11 +197,25 @@ void my_stat(int flag,char *name)
             print_gro_name(&buf);
             printf("%6d",buf.st_size);
             print_time(buf.st_mtime);
-            printf(" %-10s\n",name);
+            if(S_ISDIR(buf.st_mode))
+           {
+                printf(" \033[34m%-10s\033[0m\n",name);
+            }
+            else
+            {
+                printf(" %-10s\n",name);
+            }
     }
     else
     {
-    	printf("%-14s",name);
+        if(S_ISDIR(buf.st_mode))
+        {
+            printf(" \033[34m%-10s\033[0m\n",name);
+        }
+        else
+        {
+           printf("%-14s",name);
+        }
     }
 }
 char *month_analy(int month)
@@ -411,7 +439,11 @@ int main(int argc,char **argv)
     {
         display_R(".");
     }
-    else if(argc==3 && !strcmp("-R",argv[2]))
+    else if(argc==3 && !strcmp("-R",argv[1]))
+    {
+        display_R(argv[2]);
+    }
+    else
     {
         printf("Not Support This Commond\n");
     }
