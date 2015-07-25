@@ -48,7 +48,7 @@ void sort(int count,str_node_t *head);
 int print_info_srv(int count,int flag,str_node_t *head);
 
 
-int display(int flag,char *path)
+int display(int flag,char *path)  //文件目录解析函数，获取当前目录所有文件
 {
     int i=0,j,count=0;
     DIR *dir;
