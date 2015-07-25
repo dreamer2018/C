@@ -97,57 +97,7 @@ int display(int flag,char *path)
     chdir(cwd);
 }
 
-/*
-void my_error(const char* errstring, int line)
-{
-    fprintf(stderr,"line:%d",line);
-    perror(errstring);
-    exit(1);
-}
-void display(int flag,char *path)
-{
-    DIR* dir;
-    struct dirent *dirent;
-    str_node_t *newNode,*head,*p;
-    char str[PATH_MAX+1];
-    int count = 0;                  //总共有多少个文件
-    if((dir = opendir(path)) == NULL)
-    {
-        my_error("opendir",__LINE__);
-    }
-    //获取文件总数和最长文件名
-    while((dirent = readdir(dir)) != NULL)
-    {
-        if(g_maxlen < strlen(dirent->d_name))
-            g_maxlen = strlen(dirent->d_name);
-        count++;
-    }
-    closedir(dir);
 
-    if(count>256)
-        my_error("文件太多超过了256个",__LINE__);
-}
-int print_info_srv(int count,int flag,str_node_t *head)
-{
-    int i,j,len = strlen(path);
-    //获取目录下所有的文件名
-    dir = opendir(path);
-    for(i=0;i<count;i++)
-    {
-        dirent=readdir(dir);
-        if(dirent == NULL)
-        {
-            my_error("readdir",__LINE__);
-        }
-        strncpy(str,path,len);
-        str[len] = 0;
-        strcat(str,dirent->d_name);
-        str[len+strlen(dirent->d_name)] = 0;
-        newNode=(str_node_t *)malloc(sizeof(str_node_t));
-        strcpy(newNode->str,str);
-        strcpy(newNode->str2,dirent->d_name);
-        List_AddHead(head,newNode);
-    }*/
 int print_info_srv(int count,int flag,str_node_t *head)
 {
     int i;
@@ -191,89 +141,6 @@ void sort(int count,str_node_t *head)
         }
     }
 }
-    /*
-    for(i=0;i<=count;i++)
-    {
-        p=head->next;
-        for(j=1;j<count;j++)
-        {
-            if(strcmp(p->str,p->next->str)>0)
-            {
-                strcpy(temp,p->str);
-                strcpy(p->str,p->next->str);
-                strcpy(p->next->str,temp);
-            }
-            p=p->next;
-        }
-    }*/
-/*
-int display_R(int flag,char *path)
-{
-    DIR* dir;
-    struct dirent *dirent;
-    struct stat buf;
-    str_node_t *newNode,*head,*p;
-    char str[PATH_MAX+1];
-    int count = 0;      //总共有多少个文件
-    if((dir = opendir(path)) == NULL)
-    {
-        my_error("opendir",__LINE__);
-    }
-
-    //取得最长文件名
-    while((dirent = readdir(dir)) != NULL)
-    {
-        if(g_maxlen < strlen(dirent->d_name))
-            g_maxlen = strlen(dirent->d_name);
-        count++;
-    }
-    closedir(dir);
-
-    if(count>256)
-        my_error("文件太多超过了256个",__LINE__);
-
-    int i,j,len = strlen(path);
-    //获取目录下所有的文件名
-    dir = opendir(path);
-    for(i=0;i<count;i++)
-    {
-        dirent = readdir(dir);
-        if(dirent == NULL)
-        {
-            my_error("readdir",__LINE__);
-        }
-        strncpy(str,path,len);
-        str[len] = 0;
-        strcat(str,dirent->d_name);
-        str[len+strlen(dirent->d_name)] = 0;
-        newNode=(str_node_t *)malloc(sizeof(str_node_t));
-        strcpy(newNode->str,str);
-        List_AddHead(head,newNode);
-    }
-    sort(count,head);
-    p=head;
-    for(i=0;i<count;i++)
-    {
-        p=p->next;
-        lstat(p->str,&buf);
-        if(!strcmp(p->str,".")||!strcmp(p->str,".."))
-        {
-            continue;
-        }
-        if(S_ISDIR(buf.st_mode))
-        {
-            printf("%s",p->str);
-            display_R(2,p->str);
-        }
-        else
-        {
-            printf("%s",p->str);
-        }
-    }
-    closedir(dir);
-    return 1;
-}*/
-
 
 void my_stat(int flag,char *name)
 {
@@ -285,16 +152,16 @@ void my_stat(int flag,char *name)
             print_filemode_usr(&buf);
             print_filemode_gro(&buf);
             print_filemode_oth(&buf);
-            printf("%d",buf.st_nlink);
+            printf("%3d",buf.st_nlink);
             print_usr_name(&buf);
             print_gro_name(&buf);
             printf("%6d",buf.st_size);
             print_time(buf.st_mtime);
-            printf(":%-10s\n",name);
+            printf(" %-10s\n",name);
     }
     else
     {
-    	printf("%-15s",name);
+    	printf("%-14s",name);
     }
 }
 char *month_analy(int month)
@@ -498,7 +365,6 @@ int main(int argc,char **argv)
     else if(argc==3 && !strcmp("-l",argv[1]))  //analysis: ls -l file
     {
         flag=0;
-      //  printf("%s",argv[2]);
         display(flag,argv[2]);
     }
     else if(argc==3 && !strcmp("-a",argv[1]))  //analysis : ls -a file
