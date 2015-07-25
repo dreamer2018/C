@@ -86,7 +86,7 @@ int display_R(char *path)
     char cwd[256];
     getcwd(cwd,256);
     chdir(path);
-    str_node_t *newNode,*head,*p;
+    str_node_t *newNode,*head,*p,*q;
     List_Init(head,str_node_t);
     if((dir=opendir("./"))==NULL)
     {
@@ -105,11 +105,6 @@ int display_R(char *path)
     p=head;
     for(i=0;i<count;i++)
     {
-        my_stat(-1,p->str);
-    }
-    p=head;
-    for(i=0;i<count;i++)
-    {
         p=p->next;
         lstat(p->str,&buf);
         if(!strcmp(p->str,".")||!strcmp(p->str,"..")||p->str[0]=='.')
@@ -118,13 +113,13 @@ int display_R(char *path)
         }
         if(S_ISDIR(buf.st_mode))
         {
-            printf("\n%s",cwd);
-            printf("%s\n",p->str);
+            printf("\n\033[34m%s",cwd);
+            printf("%s/\033[0m\n",p->str);
             display_R(p->str);
         }
         else
         {
-            printf("%s\t",p->str);
+            printf("%-15s\t",p->str);
         }
     }
     printf("\n");
@@ -210,7 +205,7 @@ void my_stat(int flag,char *name)
     {
         if(S_ISDIR(buf.st_mode))
         {
-            printf(" \033[34m%-10s\033[0m\n",name);
+            printf(" \033[34m%-10s\033[0m",name);
         }
         else
         {
