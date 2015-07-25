@@ -1,15 +1,3 @@
-/*#include<sys/types.h>
-#include<dirent.h>
-#include<unistd.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<errno.h>
-#include<sys/stat.h>
-#include<time.h>
-#include<string.h>
-#include<dirent.h>
-#include<grp.h>
-#include<pwd.h>*/
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -23,15 +11,6 @@
 #include <pwd.h>
 #include <grp.h>
 #include <time.h>
-
-#define PARAM_NONE 0 //无参数
-#define PARAM_A    1 //-a
-#define PARAM_L    2 //-l
-#define MAXROWLEN  80 //一行最多显示的字符数
-
-int g_leave_len = MAXROWLEN; //一行是剩余长度，用于输出对齐
-int g_maxlen;                //存放某目录下最长文件名的长度
-
 
 #define MAX_LINE 80
 #define MAX_STRING 256   //最长文件名
