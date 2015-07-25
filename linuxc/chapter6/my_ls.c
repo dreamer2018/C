@@ -84,8 +84,8 @@ int display_R(char *path) //专为ls -R 设计的用于递归的函数
     struct dirent *ptr;
     struct stat buf;
     char cwd[256];
-    getcwd(cwd,256);
-    chdir(path);
+    getcwd(cwd,256); //获得当前路径
+    chdir(path);    //切换到path所代表的路径
     str_node_t *newNode,*head,*p,*q;
     List_Init(head,str_node_t);
     if((dir=opendir("./"))==NULL)
