@@ -43,6 +43,7 @@ void print_usr_name(struct stat *buf);
 void print_gro_name(struct stat *buf);
 void print_time(time_t st_time);
 int display(int flag,char *path);
+int display_R(char *path);
 void sort(int count,str_node_t *head);
 int print_info_srv(int count,int flag,str_node_t *head);
 
@@ -75,6 +76,48 @@ int display(int flag,char *path)
     chdir(cwd);
 }
 
+int display_R(char *path)
+{
+    int i=0,j,count=0;
+    DIR *dir;
+    struct dirent *ptr;
+    struct stat buf;
+    char cwd[256];
+    getcwd(cwd,256);
+    chdir(path);
+    str_node_t *newNode,*head,*p;
+    List_Init(head,str_node_t);
+    if((dir=opendir(path))==NULL)
+    {
+        perror("opendir");
+        return -1;
+    }
+    while((ptr=readdir(dir))!=NULL)
+    {
+        i++;
+        newNode=(str_node_t *)malloc(sizeof(str_node_t));
+        strcpy(newNode->str,ptr->d_name);
+        List_AddHead(head,newNode);
+    }
+    count=i;
+    sort(count,head);
+    p=head;
+    for(i=0;i<count;i++)
+    {
+        p=p->next;
+        lstat(p->str,&buf);
+        if(!strcmp(p->str,".")||!strcmp(p->str,"..")||p->str[0]=='.')
+        {
+            continue;
+        }
+        if(S_ISDIR(buf.st_mode))
+        {
+            display_R(p->str);
+        }
+    }
+    closedir(dir);
+    chdir(cwd);
+}
 
 int print_info_srv(int count,int flag,str_node_t *head)
 {
@@ -88,7 +131,9 @@ int print_info_srv(int count,int flag,str_node_t *head)
         if(flag==-1 || flag==0)
         {
             if(!strcmp(p->str,".")||!strcmp(p->str,"..")||p->str[0]=='.')
+            {
                 continue;
+            }
             my_stat(flag,p->str);
             if(i==count-1)
             {
@@ -362,14 +407,13 @@ int main(int argc,char **argv)
         flag=2;
         display(flag,argv[2]);
     }
-    /*
-    else if(argc==2 && !strcmp("_R",argv[2]))
+    else if(argc==2 && !strcmp("-R",argv[1]))
     {
-        display_R("./");
+        display_R(".");
     }
-    else
+    else if(argc==3 && !strcmp("-R",argv[2]))
     {
         printf("Not Support This Commond\n");
-    }*/
+    }
     return 0;
 }
