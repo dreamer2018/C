@@ -112,13 +112,16 @@ int print_info_srv(int count,int flag,str_node_t *head)
             if(!strcmp(p->str,".")||!strcmp(p->str,".."))
                 continue;
             my_stat(flag,p->str);
+            if(count==5)
+            {
+                printf("\n");
+            }
         }
         else
         {
            my_stat(flag,p->str);
         }
     }
-    printf("\n");
 }
 
 void sort(int count,str_node_t *head)
