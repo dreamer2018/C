@@ -22,7 +22,7 @@ void main()
             printf("creat a process error");
             exit(1);
         default:
-           // msg="Parents procee is running";
+           printf("Parents procee is running");
             exit_code=0;
     }
     if(pid!=0)
