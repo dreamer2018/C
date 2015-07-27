@@ -10,7 +10,7 @@ int main()
     pid_t pid;
     int stat_val=0;
     int oldpri,newpri;
-    printf("nice study:");
+    printf("nice study:\n");
     pid=fork();
     switch(pid)
     {
