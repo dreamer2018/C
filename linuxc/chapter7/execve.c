@@ -25,6 +25,7 @@ void main(int argc,char *argv[],char **environ)
             printf("parent process is runing\n");
             break;
     }
-    wait(&stat_val);
+   // wait(&stat_val);
+    printf("%d\n",wait(&stat_val));
     exit(0);
 }
