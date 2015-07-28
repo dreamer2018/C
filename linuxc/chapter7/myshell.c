@@ -8,6 +8,9 @@
 #include<fcntl.h>
 #include<sys/stat.h>
 extern char **environ;
+
+int find_command(char *command);
+
 void print_prompt() //打印myshell的提示符
 {
     printf("my_shell:*_*$");
@@ -71,6 +74,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     char *file;
     int fd,fd2;
     pid_t pid;
+    int status;
     for(i=0;i<argcount;i++)
     {
         arg[i]=(char *)arglist[i];
@@ -175,7 +179,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
         case 0:
             if(pid==0)
             {
-                if(!find_command(arg[0]))
+                if(!(find_command(arg[0])))
                 {
                     printf("%s:Not Found This Commond!\n",arg[0]);
                     exit(0);
@@ -209,12 +213,54 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
                         exit(0);
                     }
                 }
-                fd2=open(file,O_RDONLY);
-                dup2(fd2,0);
+                fd=open(file,O_RDONLY);
+                dup2(fd,0);
                 execvp(arg[0],arg);
                 exit(0);
             }
+        case 3:
+            if(pid==0)
+            {
+                int status2;
+                pid_t pid2;
+                pid2=fork();
+                if(pid2==0)
+                {
+                    if(!find_commond(arg[0]))
+                    {
+                        printf("%s:Not Found Commond!\n",arg[0]);
+                        exit(0);
+                    }
+                    fd2=open("/tmp/data",O_RDWR|O_CREAT|O_TRUNC,0644);
+                    dup2(fd2,1);
+                    execvp(arg[0],arg);
+                    exit(0);
+                }
+                if(waitpid(pid2,&status2,0)==-1)
+                {
+                    printf("wait for child process error!");
+                }
+                if(!find_commond(argnext[0]))
+                {
+                    printf("%s:commond not found\n",argnext[0]);
+                    exit(0);
+                }
+                fd=open("/tmp/data",O_RDONLY);
+                dup2(fd,0);
+                execvp(argnext[0],argnext);
+                remove("/tmp/data");
+                exit(0);
+            }
+            break;
+        default:
+            break;
     }
+    if(background==1)
+    {
+        printf("[Process id %d]\n",pid);
+        return;
+    }
+    waitpid(pid,&status,0);
 }
 int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找命令的可执行程序
 {
@@ -248,7 +294,7 @@ void main()
     char *buf;
     char arglist[100][256]; // 最多输入100条命令，每条命令不超过255个字符
     buf=(char *)malloc(256*sizeof(char));
-/*    while(1)
+    while(1)
     {
         memset(buf,0,256);
         print_prompt();
@@ -262,14 +308,7 @@ void main()
             arglist[i][0]='\0';
         }
         argcount=0;
-        explain_input(buf,&argcount,arglist);
+        argcount=explain_input(buf,arglist);
         do_cmd(argcount,arglist);
-    }*/
-    get_input(buf);
-    printf("%s",buf);
-    argcount=explain_input(buf,arglist);
-    for(i=0;i<argcount;i++)
-    {
-        printf("%s\n",arglist[i]);
     }
 }
