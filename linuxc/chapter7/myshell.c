@@ -6,6 +6,7 @@
 #include<sys/wait.h>
 #include<dirent.h>
 #include<sys/stat.h>
+extern char **environ;
 void print_prompt() //打印myshell的提示符
 {
     printf("my_shell:*_*$");
@@ -55,7 +56,54 @@ int explain_input(char *buf,char arglist[][256]) //解析buf中的命令，每�
 }
 void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount为待执行的命令个数
 {
+    int pipe=-1;         //管道标识
+    int background=-1;     //后台运行标识
+    int in=-1;             //输入重定向符
+    int inin=-1;
+    int out=-1;            //输出重定向符
+    int outout=-1;
+    for(i=0;i<argcount;i++)
+    {
+        if(!strcmp(arglist[i],"|"))
+        {
+            pipe=i;
+        }
+        if(!strcmp(arglist[i],">"))
+        {
+            out=i;
+        }
+        if(!strcmp(arglist[i],"<"))
+        {
+            in=i;
+        }
+        if(!strcmp(arglist[i],">>"))
+        {
+            inin=i;
+        }
+        if(!strcmp(arglist[i],"<<"))
+        {
+            outout=i;
+        }
+        if(!strcmp(arglist[i],"&"))
+        {
+            if(i=argcount-1)
+            {
+                background=1;
+                arglist[argcount-1]=NULL;
+            }
+        }
+    }
+    if(out!=-1)
+    {
+        if(background!=-1)
+        {
 
+        }
+        else
+        {
+
+        }
+    }
 }
 int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找命令的可执行程序
 {
