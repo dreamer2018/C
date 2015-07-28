@@ -26,32 +26,40 @@ void get_input(char *buf)//获得用户输入的待执行命令，参数buf存�
         }
     }
 }
-void explain_input(char *buf,int *argcount,char arglist[100][256]) //解析buf中的命令，每个选项都存放在arglist中
+int explain_input(char *buf,char arglist[][256]) //解析buf中的命令，每个选项都存放在arglist中
 {
-    int i,j,k=0;
-    for(i=0;i<256;i++)
+    int i,j,k=0,n=-1;
+    for(i=0;buf[i]!='\n';i++)
     {
         if(buf[i]==' ')
             continue;
-        for(j=0;j<256;j++)
+        for(j=i;buf[j]!='\n';j++)
         {
-            if(buf[i]!=' ')
+            n++;
+            if(buf[j]!=' ')
             {
-                arglist[k][j]=buf[i];
+                arglist[k][n]=buf[j];
             }
             else
             {
+                n++;
+                arglist[k][n]='\0';
+                n=-1;
                 k++;
             }
         }
         break;
     }
+    k++;
+    return k;
 }
 void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount为待执行的命令个数
 {
+
 }
 int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找命令的可执行程序
 {
+
 }
 
 void main()
@@ -79,4 +87,9 @@ void main()
     }*/
     get_input(buf);
     printf("%s",buf);
+    argcount=explain_input(buf,arglist);
+    for(i=0;i<argcount;i++)
+    {
+        printf("%s\n",arglist[i]);
+    }
 }
