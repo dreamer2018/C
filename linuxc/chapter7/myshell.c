@@ -10,6 +10,10 @@
 extern char **environ;
 
 int find_command(char *command);
+void do_cmd(int argcount,char arglist[100][256]);
+int explain_input(char *buf,char arglist[][256]);
+void get_input(char *buf);
+void print_prompt();
 
 void print_prompt() //打印myshell的提示符
 {
@@ -226,7 +230,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
                 pid2=fork();
                 if(pid2==0)
                 {
-                    if(!find_commond(arg[0]))
+                    if(!find_command(arg[0]))
                     {
                         printf("%s:Not Found Commond!\n",arg[0]);
                         exit(0);
@@ -240,7 +244,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
                 {
                     printf("wait for child process error!");
                 }
-                if(!find_commond(argnext[0]))
+                if(!find_command(argnext[0]))
                 {
                     printf("%s:commond not found\n",argnext[0]);
                     exit(0);
