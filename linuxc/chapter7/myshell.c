@@ -59,7 +59,28 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
 }
 int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找命令的可执行程序
 {
-
+    //文件目录解析函数，获取当前目录所有文件
+    int i=0,j,count=0;
+    DIR *dir;
+    struct dirent *ptr;
+    char path[][9]={"./","/bin","/usr/bin"};
+    while(path[i]!=NULL);
+    {
+        if((dir=opendir(path[i]))==NULL)
+        {
+            perror("opendir");
+            return -1;
+        }
+        while((ptr=readdir(dir))!=NULL)
+        {
+            if(!strcmp(ptr->d_name,command))
+            {
+                return 1;
+            }
+        }
+        closedir(dir);
+        i++;
+    }
 }
 
 void main()
