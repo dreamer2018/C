@@ -83,6 +83,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     {
         arg[i]=(char *)arglist[i];
     }
+    printf("test____________");
     arg[argcount]=NULL;
     for(i=0;i<argcount;i++)
     {
@@ -119,18 +120,18 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
         }
         if(i==0)
             flag++;
-    }
-    if(strcmp(arg[i],"|")==0)
-    {
-        flag++;
-        how=3;
-        if(arg[i+1]==NULL)
+        if(strcmp(arg[i],"|")==0)
         {
             flag++;
-        }
-        if(i==0)
-        {
-            flag++;
+            how=3;
+            if(arg[i+1]==NULL)
+            {
+                flag++;
+            }
+            if(i==0)
+            {
+                flag++;
+            }
         }
     }
     if(flag>1)
@@ -303,6 +304,7 @@ void main()
         memset(buf,0,256);
         print_prompt();
         get_input(buf);
+        printf("test");
         if(!strcmp("exit\n",buf)||!strcmp("logout\n",buf))
         {
             break;
