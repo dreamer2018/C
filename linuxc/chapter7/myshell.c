@@ -24,6 +24,7 @@ void get_input(char *buf)//获得用户输入的待执行命令，参数buf存�
     int i=0;
     while(1)
     {
+        printf("test");
         buf[i]=getchar();
         if(buf[i]=='\n')
         {
