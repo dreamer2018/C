@@ -5,6 +5,7 @@
 #include<sys/types.h>
 #include<sys/wait.h>
 #include<dirent.h>
+#include<fcntl.h>
 #include<sys/stat.h>
 extern char **environ;
 void print_prompt() //打印myshell的提示符
@@ -68,7 +69,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     char *arg[argcount+1];
     char *argnext[argcount+1];
     char *file;
-    int fd;
+    int fd,fd2;
     pid_t pid;
     for(i=0;i<argcount;i++)
     {
@@ -193,6 +194,25 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
                 }
                 fd=open(file,O_RDWR|O_CREAT|O_TRUNC,0644);
                 dup2(fd,1);
+                execvp(arg[0],arg);
+                exit(0);
+            }
+            break;
+        case 2:
+            if(pid==0)
+            {
+                if(pid==0)
+                {
+                    if(!find_command(arg[0]))
+                    {
+                        printf("%s:Not Found Commond!\n",arg[0]);
+                        exit(0);
+                    }
+                }
+                fd2=open(file,O_RDONLY);
+                dup2(fd2,0);
+                execvp(arg[0],arg);
+                exit(0);
             }
     }
 }
