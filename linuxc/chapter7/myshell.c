@@ -168,7 +168,33 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             }
         }
     }
-
+    pid=fork();
+    switch(how)
+    {
+        case 0:
+            if(pid==0)
+            {
+                if(!find_command(arg[0]))
+                {
+                    printf("%s:Not Found This Commond!\n",arg[0]);
+                    exit(0);
+                }
+                execvp(arg[0],arg);
+                exit(0);
+            }
+            break;
+        case 1:
+            if(pid==0)
+            {
+                if(!find_command(arg[0]))
+                {
+                    printf("%s:Not Found This Commond!\n",arg[0]);
+                    exit(0);
+                }
+                fd=open(file,O_RDWR|O_CREAT|O_TRUNC,0644);
+                dup2(fd,1);
+            }
+    }
 }
 int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找命令的可执行程序
 {
