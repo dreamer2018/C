@@ -56,54 +56,119 @@ int explain_input(char *buf,char arglist[][256]) //解析buf中的命令，每�
 }
 void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount为待执行的命令个数
 {
+    int flag=0;
+    int i;
+    int how;
     int pipe=-1;         //管道标识
     int background=-1;     //后台运行标识
     int in=-1;             //输入重定向符
     int inin=-1;
     int out=-1;            //输出重定向符
     int outout=-1;
+    char *arg[argcount+1];
+    char *argnext[argcount+1];
+    char *file;
+    int fd;
+    pid_t pid;
     for(i=0;i<argcount;i++)
     {
-        if(!strcmp(arglist[i],"|"))
+        arg[i]=(char *)arglist[i];
+    }
+    arg[argcount]=NULL;
+    for(i=0;i<argcount;i++)
+    {
+        if(strncmp(arg[i],"&",1)==0)
         {
-            pipe=i;
-        }
-        if(!strcmp(arglist[i],">"))
-        {
-            out=i;
-        }
-        if(!strcmp(arglist[i],"<"))
-        {
-            in=i;
-        }
-        if(!strcmp(arglist[i],">>"))
-        {
-            inin=i;
-        }
-        if(!strcmp(arglist[i],"<<"))
-        {
-            outout=i;
-        }
-        if(!strcmp(arglist[i],"&"))
-        {
-            if(i=argcount-1)
+            if(i==argcount-1)
             {
                 background=1;
-                arglist[argcount-1]=NULL;
+                arg[argcount-1]=NULL;
+                break;
+            }
+            else
+            {
+                printf("wrong command\n");
+                return ;
             }
         }
     }
-    if(out!=-1)
+    for(i=0;arg[i]!=NULL;i++)
     {
-        if(background!=-1)
+        if(strcmp(arg[i],">")==0)
         {
-
+            flag++;
+            how=1;
+            if(arg[i+1]==NULL)
+            {
+                flag++;
+            }
         }
-        else
+        if(strcmp(arg[i],"<")==0)
         {
-
+            flag++;
+            how=2;
+        }
+        if(i==0)
+            flag++;
+    }
+    if(strcmp(arg[i],"|")==0)
+    {
+        flag++;
+        how=3;
+        if(arg[i+1]==NULL)
+        {
+            flag++;
+        }
+        if(i==0)
+        {
+            flag++;
         }
     }
+    if(flag>1)
+    {
+        printf("Command Error\n");
+        return ;
+    }
+    if(how==1)
+    {
+        for(i=0;arg[i]!=NULL;i++)
+        {
+            if(strcmp(arg[i],">"))
+            {
+                file=arg[i+1];
+                arg[i]=NULL;
+            }
+        }
+    }
+    if(how==2)
+    {
+        for(i=0;arg[i]!=NULL;i++)
+        {
+            if(strcmp(arg[i],"<")==0)
+            {
+                file=arg[i+1];
+                arg[i]=NULL;
+            }
+        }
+    }
+    if(how=3)
+    {
+        for(i=0;arg[i]!=NULL;i++)
+        {
+            if(strcmp(arg[i],"|")==0)
+            {
+                arg[i]=NULL;
+                int j;
+                for(j=i+1;arg[j]!=NULL;j++)
+                {
+                    argnext[j-i-1]=arg[j];
+                }
+                argnext[j-i-1]=arg[i];
+                break;
+            }
+        }
+    }
+
 }
 int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找命令的可执行程序
 {
