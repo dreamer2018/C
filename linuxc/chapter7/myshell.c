@@ -36,7 +36,8 @@ void get_input(char *buf)/*获得用户输入的待执行命令，参数buf存�
         }
     }
 }
-int explain_input(char *buf,char arglist[][256]) /*解析buf中的命令，每个选项都存放在arglist中*/
+/*
+int explain_input(char *buf,char arglist[][256]) //解析buf中的命令，每个选项都存放在arglist中
 {
     int i,j,k=0,n=-1;
     for(i=0;buf[i]!='\n';i++)   //外层循环用于排除前面的空格对命令的影响
@@ -54,13 +55,35 @@ int explain_input(char *buf,char arglist[][256]) /*解析buf中的命令，每�
             {
                 n++;
                 arglist[k][n]='\0';
-                n=-1;
+                n=-1;11
                 k++;
             }
         }
         break;
     }
     k++;
+    return k;
+}*/
+
+int explain_input(char *buf,char arglist[][256]) //解析buf中的命令，每个选项都存放在arglist中
+{
+    int i=0,j=0,k=0;
+    while(buf[i]!='\n')
+    {
+        if(buf[i]==' ')
+        {
+            i++;
+            continue;
+        }
+        j=0;
+        while(buf[i]!=' ' && buf[i]!='\n')
+        {
+            arglist[k][j]=buf[i];
+            i++;
+            j++;
+        }
+        k++;
+    }
     return k;
 }
 void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount为待执行的命令个数
@@ -87,7 +110,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             if(i==argcount-1)
             {
                 background=1;
-                arg[argcount-1]=NULL; //由于命令要以
+                arg[argcount-1]=NULL; // 命令参数要以空结束
                 break;
             }
             else
@@ -99,7 +122,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     }
     for(i=0;arg[i]!=NULL;i++)
     {
-        if(!strcmp(arg[i],">"))
+        if(!strcmp(arg[i],">"))    //输出重定向符判断
         {
             flag++;
             how=1;
@@ -108,7 +131,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
                 flag++;
             }
         }
-        if(!strcmp(arg[i],">>"))
+        if(!strcmp(arg[i],">>"))  /*输出重定向符判断，于>区别在前者是以追加方式写入，后者只是写入，文件存在会将其内容清空*/
         {
             flag++;
             how=4;
@@ -193,14 +216,14 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     switch(how)
     {
         case 0:
-            if(pid==0)
+            if(pid==0) //确保子进程运行
             {
                 if(!find_command(arg[0]))
                 {
                     printf("%s:Not Found This Commond!\n",arg[0]);
                     exit(0);
                 }
-                execvp(arg[0],arg);
+                execvp(arg[0],arg); //子进程运行其他程序，arg[0]为程序名，arg为程序的附带参数
                 exit(0);
             }
             break;
@@ -213,7 +236,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
                     exit(0);
                 }
                 fd=open(file,O_RDWR|O_CREAT|O_TRUNC,0644);
-                dup2(fd,1);
+                dup2(fd,1);  //在标准输入之前调用dup，dup2函数
                 execvp(arg[0],arg);
                 exit(0);
             }
@@ -328,7 +351,7 @@ int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找�
         i++;
     }
 }
-
+/*
 void main()
 {
     int argcount,i;
@@ -356,4 +379,17 @@ void main()
             memset(arglist[i],0,256);
         }
     }
+}*/
+void main()
+{
+        int i,argcount;;
+        char buf[256];
+        char arglist[100][256];
+        print_prompt();
+        get_input(buf);
+        argcount=explain_input(buf,arglist);
+        for(i=0;i<argcount;i++)
+        {
+            printf("%s\n",arglist[i]);
+        }
 }
