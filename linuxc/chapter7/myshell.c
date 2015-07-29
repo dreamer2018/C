@@ -68,7 +68,6 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     int i;
     int how=0;
     int background=-1;     //后台运行标识
-    int outout=-1;
     char *arg[argcount+1];
     char *argnext[argcount+1];
     char *file;
@@ -93,7 +92,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             }
             else
             {
-                printf("wrong command\n");
+                printf("Command Error\n");
                 return ;
             }
         }
@@ -104,7 +103,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
         {
             flag++;
             how=1;
-            if(arg[i+1]==NULL)
+            if(arg[i+1]==NULL||i==0)
             {
                 flag++;
             }
@@ -113,14 +112,14 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
         {
             flag++;
             how=2;
+            if(i==0 ||arg[i+1]==NULL)
+                flag++;
         }
-        if(i==0)
-            flag++;
         if(strcmp(arg[i],"|")==0)
         {
             flag++;
             how=3;
-            if(arg[i+1]==NULL)
+            if(arg[i+1]==NULL||i==0)
             {
                 flag++;
             }
@@ -139,9 +138,10 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     {
         for(i=0;arg[i]!=NULL;i++)
         {
-            if(strcmp(arg[i],">"))
+            if(!strcmp(arg[i],">"))
             {
                 file=arg[i+1];
+                printf("file:%s\n",file);
                 arg[i]=NULL;
             }
         }
@@ -152,7 +152,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
         {
             if(strcmp(arg[i],"<")==0)
             {
-                file=arg[i+1];
+                file,arg[i+1];
                 arg[i]=NULL;
             }
         }
@@ -174,6 +174,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             }
         }
     }
+    printf("how=%d",how);
     pid=fork();
     switch(how)
     {
