@@ -123,10 +123,6 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             {
                 flag++;
             }
-            if(i==0)
-            {
-                flag++;
-            }
         }
     }
     if(flag>1)
@@ -151,7 +147,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
         {
             if(!strcmp(arg[i],"<"))
             {
-                file,arg[i+1];
+                file=arg[i+1];
                 arg[i]=NULL;
             }
         }
@@ -173,7 +169,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             }
         }
     }
-    printf("how=%d",how);
+
     pid=fork();
     switch(how)
     {
