@@ -141,7 +141,6 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             if(!strcmp(arg[i],">"))
             {
                 file=arg[i+1];
-                printf("file:%s\n",file);
                 arg[i]=NULL;
             }
         }
@@ -150,7 +149,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     {
         for(i=0;arg[i]!=NULL;i++)
         {
-            if(strcmp(arg[i],"<")==0)
+            if(!strcmp(arg[i],"<"))
             {
                 file,arg[i+1];
                 arg[i]=NULL;
@@ -161,7 +160,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     {
         for(i=0;arg[i]!=NULL;i++)
         {
-            if(strcmp(arg[i],"|")==0)
+            if(!strcmp(arg[i],"|"))
             {
                 arg[i]=NULL;
                 int j;
@@ -224,7 +223,6 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             if(pid==0)
             {
                 int status2;
-                printf("test100");
                 pid_t pid2;
                 pid2=fork();
                 if(pid2==0)
