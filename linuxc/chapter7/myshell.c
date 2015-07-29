@@ -211,8 +211,15 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
                     }
                 }
                 fd=open(file,O_RDONLY);
-                dup2(fd,0);
-                execvp(arg[0],arg);
+                if(fd==-1)
+                {
+                    printf("%s:Not Found This File\n");
+                }
+                else
+                {
+                    dup2(fd,0);
+                    execvp(arg[0],arg);
+                }
                 exit(0);
             }
         case 3:
