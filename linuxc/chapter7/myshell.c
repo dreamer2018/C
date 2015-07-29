@@ -67,11 +67,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     int flag=0;
     int i;
     int how=0;
-    int pipe=-1;         //管道标识
     int background=-1;     //后台运行标识
-    int in=-1;             //输入重定向符
-    int inin=-1;
-    int out=-1;            //输出重定向符
     int outout=-1;
     char *arg[argcount+1];
     char *argnext[argcount+1];
@@ -136,7 +132,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     }
     if(flag>1)
     {
-        printf("Command Error\n");
+        printf("Command Error hehe\n");
         return ;
     }
     if(how==1)
@@ -319,5 +315,9 @@ void main()
         argcount=0;
         argcount=explain_input(buf,arglist);
         do_cmd(argcount,arglist);
+        for(i=0;i<argcount;i++)
+        {
+            memset(arglist[i],0,256);
+        }
     }
 }
