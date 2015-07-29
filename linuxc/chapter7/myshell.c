@@ -67,7 +67,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     int flag=0;
     int i;
     int how=0;
-    int background=-1;     //后台运行标识
+    int background=0;     //后台运行标识
     char *arg[argcount+1];
     char *argnext[argcount+1];
     char *file;
@@ -76,8 +76,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     int status;
     for(i=0;i<argcount;i++)
     {
-        arg[i]=arglist[i];
-        printf("%s\n",arg[i]);
+       arg[i]=arglist[i];
     }
     arg[argcount]=NULL;
     for(i=0;i<argcount;i++)
@@ -99,7 +98,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     }
     for(i=0;arg[i]!=NULL;i++)
     {
-        if(strcmp(arg[i],">")==0)
+        if(!strcmp(arg[i],">"))
         {
             flag++;
             how=1;
@@ -108,7 +107,16 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
                 flag++;
             }
         }
-        if(strcmp(arg[i],"<")==0)
+        if(!strcmp(arg[i],">>"))
+        {
+            flag++;
+            how=4;
+            if(arg[i+1]==NULL || i==0)
+            {
+                flag++;
+            }
+        }
+        if(!strcmp(arg[i],"<"))
         {
             flag++;
             how=2;
@@ -127,7 +135,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     }
     if(flag>1)
     {
-        printf("Command Error hehe\n");
+        printf("Command Error\n");
         return ;
     }
     if(how==1)
@@ -152,6 +160,17 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             }
         }
     }
+    if(how==4)
+    {
+        for(i=0;arg[i]!=NULL;i++)
+        {
+            if(!strcmp(arg[i],">>"))
+            {
+                file=arg[i+1];
+                arg[i]=NULL;
+            }
+        }
+    }
     if(how==3)
     {
         for(i=0;arg[i]!=NULL;i++)
@@ -169,14 +188,13 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             }
         }
     }
-
     pid=fork();
     switch(how)
     {
         case 0:
             if(pid==0)
             {
-                if(!(find_command(arg[0])))
+                if(!find_command(arg[0]))
                 {
                     printf("%s:Not Found This Commond!\n",arg[0]);
                     exit(0);
@@ -185,7 +203,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
                 exit(0);
             }
             break;
-        case 1:
+         case 1:
             if(pid==0)
             {
                 if(!find_command(arg[0]))
@@ -213,7 +231,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
                 fd=open(file,O_RDONLY);
                 if(fd==-1)
                 {
-                    printf("%s:Not Found This File\n");
+                    printf("%s:Not Found This File\n",file);
                 }
                 else
                 {
@@ -222,6 +240,20 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
                 }
                 exit(0);
             }
+        case 4:
+            if(pid==0)
+            {
+                if(!find_command(arg[0]))
+                {
+                    printf("%s:Not Found This Commond!\n",arg[0]);
+                    exit(0);
+                }
+                fd=open(file,O_RDWR|O_CREAT|O_APPEND,0644);
+                dup2(fd,1);
+                execvp(arg[0],arg);
+                exit(0);
+            }
+            break;
         case 3:
             if(pid==0)
             {
@@ -261,10 +293,11 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     }
     if(background==1)
     {
-        printf("[Process id %d]\n",pid);
+        printf("[1] %d\n",pid);
         return;
     }
-    waitpid(pid,&status,0);
+    if(waitpid(pid,&status,0)==-1)
+        printf("Wait for child process error!\n");
 }
 int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找命令的可执行程序
 {
