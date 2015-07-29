@@ -24,7 +24,6 @@ void get_input(char *buf)//获得用户输入的待执行命令，参数buf存�
     int i=0;
     while(1)
     {
-        printf("test");
         buf[i]=getchar();
         if(buf[i]=='\n')
         {
@@ -67,7 +66,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
 {
     int flag=0;
     int i;
-    int how;
+    int how=0;
     int pipe=-1;         //管道标识
     int background=-1;     //后台运行标识
     int in=-1;             //输入重定向符
@@ -82,9 +81,9 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     int status;
     for(i=0;i<argcount;i++)
     {
-        arg[i]=(char *)arglist[i];
+        arg[i]=arglist[i];
+        printf("%s\n",arg[i]);
     }
-    printf("test____________");
     arg[argcount]=NULL;
     for(i=0;i<argcount;i++)
     {
@@ -162,7 +161,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             }
         }
     }
-    if(how=3)
+    if(how==3)
     {
         for(i=0;arg[i]!=NULL;i++)
         {
@@ -228,6 +227,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             if(pid==0)
             {
                 int status2;
+                printf("test100");
                 pid_t pid2;
                 pid2=fork();
                 if(pid2==0)
@@ -274,8 +274,10 @@ int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找�
     int i=0,j,count=0;
     DIR *dir;
     struct dirent *ptr;
-    char path[][9]={"./","/bin","/usr/bin"};
-    while(path[i]!=NULL);
+    char *path[]={"./","/bin","/usr/bin"};
+    if(strncmp(command,"./",2)==0)
+        command=command+2;
+    while(path[i]!=NULL)
     {
         if((dir=opendir(path[i]))==NULL)
         {
@@ -286,6 +288,7 @@ int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找�
         {
             if(!strcmp(ptr->d_name,command))
             {
+                closedir(dir);
                 return 1;
             }
         }
@@ -305,12 +308,10 @@ void main()
         memset(buf,0,256);
         print_prompt();
         get_input(buf);
-        printf("test");
         if(!strcmp("exit\n",buf)||!strcmp("logout\n",buf))
         {
             break;
         }
-
         for(i=0;i<100;i++)
         {
             arglist[i][0]='\0';
