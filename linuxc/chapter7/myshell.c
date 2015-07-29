@@ -7,7 +7,8 @@
 #include<dirent.h>
 #include<fcntl.h>
 #include<sys/stat.h>
-extern char **environ;
+
+//函数声明部分
 
 int find_command(char *command);
 void do_cmd(int argcount,char arglist[100][256]);
@@ -17,9 +18,9 @@ void print_prompt();
 
 void print_prompt() //打印myshell的提示符
 {
-    printf("my_shell:*_*$");
+    printf("my_shell:*_*$");  //打印shell的命令提示
 }
-void get_input(char *buf)//获得用户输入的待执行命令，参数buf存放输入的命令，如果命令过长，则报错退出，输入的以换行结束
+void get_input(char *buf)/*获得用户输入的待执行命令，参数buf存放输入的命令，如果命令过长，则报错退出，输入的以换行结束*/
 {
     int i=0;
     while(1)
@@ -35,14 +36,14 @@ void get_input(char *buf)//获得用户输入的待执行命令，参数buf存�
         }
     }
 }
-int explain_input(char *buf,char arglist[][256]) //解析buf中的命令，每个选项都存放在arglist中
+int explain_input(char *buf,char arglist[][256]) /*解析buf中的命令，每个选项都存放在arglist中*/
 {
     int i,j,k=0,n=-1;
-    for(i=0;buf[i]!='\n';i++)
+    for(i=0;buf[i]!='\n';i++)   //外层循环用于排除前面的空格对命令的影响
     {
         if(buf[i]==' ')
             continue;
-        for(j=i;buf[j]!='\n';j++)
+        for(j=i;buf[j]!='\n';j++)   //内层循环用于解析出命令及其命令后面的附加参数
         {
             n++;
             if(buf[j]!=' ')
@@ -68,9 +69,9 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     int i;
     int how=0;
     int background=0;     //后台运行标识
-    char *arg[argcount+1];
-    char *argnext[argcount+1];
-    char *file;
+    char *arg[argcount+1]; //程序运行参数保存
+    char *argnext[argcount+1]; //管道的第二个程序运行参数保存
+    char *file;     //输出，输入重定向文件名保存
     int fd,fd2;
     pid_t pid;
     int status;
@@ -86,7 +87,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
             if(i==argcount-1)
             {
                 background=1;
-                arg[argcount-1]=NULL;
+                arg[argcount-1]=NULL; //由于命令要以
                 break;
             }
             else
