@@ -26,6 +26,6 @@ int main()
     pthread_create(&thid,NULL,thread,NULL);
     sleep(3);
     pthread_setspecific(key, (void *)&tsd);
-    printf("%u\n",pthread_getspecific(key));
+    printf("%d\n",pthread_getspecific(key));
     pthread_key_delete(key);
 }
