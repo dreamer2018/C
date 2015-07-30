@@ -16,20 +16,20 @@ pthread_key_t key;
 void *thread2(void *arg)
 {
     int tsd=5;
-    printf("thread %d is running \n",pthread_self());
+    printf("thread %u is running \n",pthread_self());
     pthread_setspecific( key,(void *)tsd);
-    printf("thread %d return %d \n",pthread_self(),pthread_getspecific( key));
+    printf("thread %u return %u \n",pthread_self(),pthread_getspecific( key));
 }
 void * thread1(void *arg)
 {
     int tsd =0;
     pthread_t thid2;
 
-    printf("thread %d is running \n",pthread_self);
-    pthread_setspecific(key,(void *)tsd );
+    printf("thread %u is running \n",pthread_self);
+    pthread_setspecific(key,(void *)tsd);
     pthread_create(&thid2 ,NULL ,thread2,NULL);
     sleep(5);
-    printf("thread %d return %d \n",pthread_self(),pthread_getspecific(key));
+    printf("thread %u return %u \n",pthread_self(),pthread_getspecific(key));
 }
 int main()
 {
