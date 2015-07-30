@@ -12,18 +12,20 @@
 
 pthread_key_t key;
 
-void pthread( void * arg )
+void *thread( void * arg )
 {
     int tsd = 5 ;
     pthread_setspecific( key ,(void *)&tsd );
-    printf("%36d \n",pthread_getspecific(key));
+    printf("%u\n",pthread_getspecific(key));
 }
 int main()
 {
+    int tsd=2;
     pthread_t thid;
-    pthread_key_create( &key ,(void *)pthread);
-    pthread_create(&thid,NULL,(void *)pthread,NULL);
-    sleep(5);
+    pthread_key_create( &key ,NULL);
+    pthread_create(&thid,NULL,thread,NULL);
+    sleep(3);
+    pthread_setspecific(key, (void *)&tsd);
+    printf("%u\n",pthread_getspecific(key));
     pthread_key_delete(key);
 }
-
