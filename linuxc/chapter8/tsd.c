@@ -15,9 +15,9 @@ pthread_key_t key;
 
 void *thread2(void *arg)
 {
-    int tsd=5;
-    printf("thread %u is running \n",pthread_self());
-    pthread_setspecific( key,(void *)tsd);
+   // int tsd=5;
+   // printf("thread %u is running \n",pthread_self());
+   // pthread_setspecific( key,(void *)tsd);
     printf("thread %u return %u \n",pthread_self(),pthread_getspecific( key));
 }
 void * thread1(void *arg)
@@ -37,7 +37,7 @@ int main()
     printf("main thread begins running\n");
     pthread_key_create(&key ,NULL);
     pthread_create(&thid1,NULL,thread1,NULL);
-    sleep(3);
+    sleep(6);
     pthread_key_delete(key);
     printf("main thread exit\n");
     return 0;
