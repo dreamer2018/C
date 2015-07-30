@@ -16,7 +16,7 @@ void *thread( void * arg )
 {
     int tsd = 5 ;
     pthread_setspecific( key ,(void *)&tsd );
-    printf("%u\n",pthread_getspecific(key));
+    printf("%d\n",pthread_getspecific(key));
 }
 int main()
 {
