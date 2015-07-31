@@ -55,7 +55,7 @@ int main(void)
     {
         pthread_cond_signal(&cond);
     }while(1);
-    sleep(5);
+    sleep(50);
     pthread_exit(0);
 }
 
