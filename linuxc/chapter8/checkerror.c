@@ -19,7 +19,7 @@ int main()
 
     if(fp==NULL)
     {
-        printf("文件打开失败！errno=%d\n",errno);
+        printf("文件打开失败！errno=%d\n",errno);  //文件不存在，errno=2，文件无读权限，errno=13
     }
     else
     {
