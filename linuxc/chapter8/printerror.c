@@ -16,7 +16,7 @@ int main()
 
     errno=0;
 
-    fp=fopen("checkerror","r");
+    fp=fopen("2","r");
 
     if(fp==NULL)
     {
