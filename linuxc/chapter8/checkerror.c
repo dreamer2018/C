@@ -8,6 +8,8 @@
 
 #include<stdio.h>
 #include<errno.h>
+#include<string.h>
+
 
 int main()
 {
@@ -15,11 +17,12 @@ int main()
 
     errno=0;
 
-    fp=fopen("checkerror.c","r");
+    fp=fopen("2","r");
 
     if(fp==NULL)
     {
         printf("文件打开失败！errno=%d\n",errno);  //文件不存在，errno=2，文件无读权限，errno=13
+        printf("%s\n",strerror(errno));
     }
     else
     {
