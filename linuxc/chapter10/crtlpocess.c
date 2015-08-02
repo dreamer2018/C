@@ -14,7 +14,8 @@
 
 int main(int arg,char *argv[])
 {
-    int n;
+    
+	int n;
     char buf[1024];
 
     while(1)
