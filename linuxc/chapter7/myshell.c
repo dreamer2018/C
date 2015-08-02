@@ -7,6 +7,7 @@
 #include<dirent.h>
 #include<fcntl.h>
 #include<sys/stat.h>
+#include<errno.h>
 
 //函数声明部分
 
@@ -320,7 +321,19 @@ int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找�
         i++;
     }
 }
-
+void my_cd(char *arg)
+{
+    errno=0;
+   // char buf1[512],buf2[512];
+   // getcwd(buf2,511);
+   // printf("%s\n",buf2);
+    if(chdir(arg)<0)
+    {
+        printf("%s:%s\n",arg,strerror(errno));
+    }
+    getcwd(buf1,511);
+    printf("%s\n",buf1);
+}
 void main()
 {
     int argcount,i;
