@@ -110,7 +110,12 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
         {
             if(!strcmp(arg[1],"-"))
             {
+                printf("\n%s\n\n",pre_path);
                 strcpy(arg[1],pre_path);
+            }
+            if(!strcmp(arg[1],"~"))
+            {
+                strcpy(arg[1],getenv("HOME"));
             }
             strcpy(path,arg[1]);
         }
