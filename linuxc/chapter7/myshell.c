@@ -9,8 +9,12 @@
 #include<sys/stat.h>
 #include<errno.h>
 
-//函数声明部分
+
+//记录上次目录函数
+
 char pre_path[512];
+
+//函数声明部分
 
 
 int find_command(char *command);
@@ -377,7 +381,7 @@ void main()
 {
     int argcount,i;
     char *buf;
-    //strcpy(pre_path,getenv("HOME"));
+    getcwd(pre_path,511);   //初始化记录上次目录的字符串
     char arglist[100][256]; // 最多输入100条命令，每条命令不超过255个字符
     buf=(char *)malloc(256*sizeof(char));
     while(1)
