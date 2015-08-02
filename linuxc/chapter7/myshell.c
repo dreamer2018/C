@@ -12,14 +12,36 @@
 //函数声明部分
 
 int find_command(char *command);
-void do_cmd(int argcount,char arglist[100][256]);
+int do_cmd(int argcount,char arglist[100][256]);
 int explain_input(char *buf,char arglist[][256]);
 void get_input(char *buf);
 void print_prompt();
+void my_cd(char *arg);
 
 void print_prompt() //打印myshell的提示符
 {
-    printf("my_shell:*_*$");  //打印shell的命令提示
+    int i,j,n;
+    char *path = getenv("HOME");
+    char buf[512],swap[511];
+    j=strlen(path);
+    getcwd(swap,511);
+    if(!strcmp(swap,path))
+    {
+        strcpy(buf,"~");
+    }
+    else if(!strncmp(swap,"/home/zhoupan",j))
+    {
+        strcpy(buf,"~");
+        for(i=1;i<strlen(swap);i++,j++)
+        {
+            buf[i]=swap[j];
+        }
+    }
+    else
+    {
+        strcpy(buf,swap);
+    }
+    printf("my_shell:%s *_*$",buf);  //打印shell的命令提示
 }
 void get_input(char *buf)/*获得用户输入的待执行命令，参数buf存放输入的命令，如果命令过长，则报错退出，输入的以换行结束*/
 {
@@ -58,7 +80,7 @@ int explain_input(char *buf,char arglist[][256]) //解析buf中的命令，每�
     }
     return k;
 }
-void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount为待执行的命令个数
+int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount为待执行的命令个数
 {
     int flag=0;
     int i;
@@ -67,6 +89,7 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     char *arg[argcount+1]; //程序运行参数保存
     char *argnext[argcount+1]; //管道的第二个程序运行参数保存
     char *file;     //输出，输入重定向文件名保存
+    char path[512];
     int fd,fd2;
     pid_t pid;
     int status;
@@ -75,6 +98,19 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
        arg[i]=arglist[i];
     }
     arg[argcount]=NULL;
+    if(!strcmp(arg[0],"cd"))
+    {
+        if(argcount>1)
+        {
+            strcpy(path,arg[1]);
+        }
+        else
+        {
+            strcpy(path,getenv("HOME"));
+        }
+        my_cd(path);
+        return 0;
+    }
     for(i=0;i<argcount;i++)
     {
         if(strncmp(arg[i],"&",1)==0)
@@ -288,10 +324,11 @@ void do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcoun
     if(background==1)
     {
         printf("[1] %d\n",pid);
-        return;
+        return 0;
     }
     if(waitpid(pid,&status,0)==-1)
         printf("Wait for child process error!\n");
+    return 0;
 }
 int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找命令的可执行程序
 {
@@ -324,15 +361,10 @@ int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找�
 void my_cd(char *arg)
 {
     errno=0;
-   // char buf1[512],buf2[512];
-   // getcwd(buf2,511);
-   // printf("%s\n",buf2);
     if(chdir(arg)<0)
     {
         printf("%s:%s\n",arg,strerror(errno));
     }
-    getcwd(buf1,511);
-    printf("%s\n",buf1);
 }
 void main()
 {
