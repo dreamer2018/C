@@ -21,15 +21,15 @@ void my_cd(char *arg);
 void print_prompt() //打印myshell的提示符
 {
     int i,j,n;
-    char *path = getenv("HOME");
-    char buf[512],swap[511];
-    j=strlen(path);
+    char *path = getenv("HOME");    //从环境变量中获得当前的home目录，目的是增强软件的移植性  
+    char buf[512],swap[511];    
+    j=strlen(path); 
     getcwd(swap,511);
     if(!strcmp(swap,path))
     {
-        strcpy(buf,"~");
+        strcpy(buf,"~");  //如果为家目录，则使用～表示
     }
-    else if(!strncmp(swap,"/home/zhoupan",j))
+    else if(!strncmp(swap,"/home/zhoupan",j)) //如果为家目录下的目录，则使用～/代替家那段目录
     {
         strcpy(buf,"~");
         for(i=1;i<strlen(swap);i++,j++)
@@ -39,7 +39,7 @@ void print_prompt() //打印myshell的提示符
     }
     else
     {
-        strcpy(buf,swap);
+        strcpy(buf,swap); 
     }
     printf("my_shell:%s *_*$",buf);  //打印shell的命令提示
 }
@@ -102,6 +102,10 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
     {
         if(argcount>1)
         {
+            if(strcmp(arg[1],"-"))
+            {
+                strcpy(arg[1],"..");
+            }
             strcpy(path,arg[1]);
         }
         else
@@ -361,9 +365,9 @@ int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找�
 void my_cd(char *arg)
 {
     errno=0;
-    if(chdir(arg)<0)
+    if(chdir(arg)<0) //切换arg的目录
     {
-        printf("%s:%s\n",arg,strerror(errno));
+        printf("%s:%s\n",arg,strerror(errno));  //错误处理
     }
 }
 void main()
