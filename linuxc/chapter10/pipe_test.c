@@ -35,6 +35,7 @@ void read_pipe(int fd)
 int main()
 {
     int fd[2];
+    int stat_val;
     pid_t pid;
     if(pipe(fd))
     {
@@ -45,13 +46,18 @@ int main()
     switch(pid)
     {
         case 0:
-            write_pipe(fd[1]);
+            close(fd[1]);
+            //write_pipe(fd[1]);
+            read_pipe(fd[0]);
             exit(0);
         case -1:
             printf("fork a new process fial");
             exit(0);
         default:
-            read_pipe(fd[0]);
+            close(fd[0]);
+            //read_pipe(fd[0]);
+            write_pipe(fd[1]);
+            wait(&stat_val);
             exit(0);
     }
     return 1;
