@@ -10,6 +10,8 @@
 #include<errno.h>
 
 //函数声明部分
+char pre_path[512];
+
 
 int find_command(char *command);
 int do_cmd(int argcount,char arglist[100][256]);
@@ -21,7 +23,7 @@ void my_cd(char *arg);
 void print_prompt() //打印myshell的提示符
 {
     int i,j,n;
-    char *path = getenv("HOME");    //从环境变量中获得当前的home目录，目的是增强软件的移植性  
+    char *path = getenv("HOME");    //从环境变量中获得当前的home目录，目的是增强软件的移植性
     char buf[512],swap[511];    
     j=strlen(path); 
     getcwd(swap,511);
@@ -102,9 +104,9 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
     {
         if(argcount>1)
         {
-            if(strcmp(arg[1],"-"))
+            if(!strcmp(arg[1],"-"))
             {
-                strcpy(arg[1],"..");
+                strcpy(arg[1],pre_path);
             }
             strcpy(path,arg[1]);
         }
@@ -128,7 +130,7 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
             else
             {
                 printf("Command Error\n");
-                return ;
+                return 0;
             }
         }
     }
@@ -170,7 +172,7 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
     if(flag>1)
     {
         printf("Command Error\n");
-        return ;
+        return 0;
     }
     if(how==1)
     {
@@ -365,6 +367,7 @@ int find_command(char *command)//在当前目录下，/bin，/usr/bin下查找�
 void my_cd(char *arg)
 {
     errno=0;
+    getcwd(pre_path,511);
     if(chdir(arg)<0) //切换arg的目录
     {
         printf("%s:%s\n",arg,strerror(errno));  //错误处理
@@ -374,6 +377,7 @@ void main()
 {
     int argcount,i;
     char *buf;
+    //strcpy(pre_path,getenv("HOME"));
     char arglist[100][256]; // 最多输入100条命令，每条命令不超过255个字符
     buf=(char *)malloc(256*sizeof(char));
     while(1)
