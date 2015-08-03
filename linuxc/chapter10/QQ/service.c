@@ -13,6 +13,7 @@
 #include<sys/stat.h>
 #include<stdlib.h>
 #include<string.h>
+#include<errno.h>
 
 #define BUF_SIZE 1024
 #define FIFO_WRITE "writefifo"
@@ -20,7 +21,7 @@
 
 int main()
 {
-    int errno=0;
+    errno=0;
     int wfd,rfd;
     char buf[BUF_SIZE];
     int len;
@@ -29,14 +30,15 @@ int main()
     if(mkfifo(FIFO_WRITE,S_IFIFO|0666)) //创建一个有名管道
     {
         printf("Create %s fail because:%s",FIFO_WRITE,strerror(errno));
-        exit(0);
+        exit(1);
     }
     
     umask(0);
-    if((wfd=open(FIFO_WRITE,O_WRONLY))==-1)     //打开管道写端
+    wfd=open(FIFO_WRITE,O_WRONLY);    //打开管道写端
+    if(wfd==-1)     //打开管道写端
     {
         printf("Open %s errno,because :%s",FIFO_WRITE,strerror(errno));
-        exit(0);
+        exit(1);
     }
 
     while((rfd=open(FIFO_READ,O_RDONLY))==-1)  //打开管道读端
@@ -48,9 +50,9 @@ int main()
     {
         printf("Service:");
         fgets(buf,BUF_SIZE,stdin);  //获取用户的输入
-        buf[(strlen(buf)-1)]='\0'; //字符串要以‘\0‘结尾
+        buf[strlen(buf)-1]='\0'; //字符串要以‘\0‘结尾
         
-        if(!strcmp(buf,"quit"))     //若字符串为quit，则退出
+        if(strncmp(buf,"quit",4)==0)     //若字符串为quit，则退出
         {
             close(wfd);
             unlink(FIFO_WRITE);     //断开连接
@@ -58,7 +60,7 @@ int main()
             exit(0);
         }
         
-        write(wfd,buf,strlen(buf)+1); //向通道中写入东西
+        write(wfd,buf,strlen(buf)); //向通道中写入东西
         
         len=read(rfd,buf,BUF_SIZE);  //从通道中获取信息
         if(len>0)
