@@ -16,8 +16,8 @@
 #include<unistd.h>
 
 #define BUF_SIZE 1024
-#define FIFO_READ "readfifo.dat"
-#define FIFO_WRITE "writefifo.dat"
+#define FIFO_READ "readfifo"
+#define FIFO_WRITE "writefifo"
 
 int main()
 {
