@@ -28,18 +28,18 @@ int main(int arg,char *argv[],char **environ)
     if(pipe(fd))
     {
         perror("pipe failed\n");
-        exit(0);
+        exit(1);
     }
     pid=fork();
     switch(pid)
     {
         case -1:
             perror("fork failed!\n");
-            exit(0);
+            exit(1);
         case 0:
             close(0);
             dup(fd[0]);
-            execve("ctrlpocess",(void *)argv,environ);
+            execve("ctrlpocess",argv,environ);
             exit(0);
         default:
             close(fd[0]);
