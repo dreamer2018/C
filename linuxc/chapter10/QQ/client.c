@@ -16,8 +16,8 @@
 #include<unistd.h>
 
 #define BUF_SIZE 1024
-#define FIFO_READ "readfifo"
-#define FIFO_WRITE "writefifo"
+#define FIFO_READ "writefifo"
+#define FIFO_WRITE "readfifo"
 
 int main()
 {
@@ -27,18 +27,19 @@ int main()
     errno=0;
 
     umask(0);
-    if( mkfifo( FIFO_WRITE, S_IFIFO|0666 )==-1 )
+    if( mkfifo( FIFO_WRITE, S_IFIFO|0666 ) )
     {
         printf("creat fifo %s fail,because:%s ",FIFO_WRITE, strerror(errno));
-        exit(-1);
+        exit(1);
     }
 
-    while(rfd=open(FIFO_READ,O_RDONLY)==-1)
+    while((rfd=open(FIFO_READ,O_RDONLY))==-1)
     {
         sleep(1);
     }
 
-    if(wfd=open(FIFO_WRITE, O_WRONLY)==-1)
+    wfd=open(FIFO_WRITE, O_WRONLY);
+    if(wfd==-1)
     {
         printf("Fail to open %s ,because: %s",FIFO_WRITE,strerror(errno));
         exit(-1);
@@ -49,20 +50,20 @@ int main()
         len=read(rfd,buf,BUF_SIZE);
         if(len>0)
         {
-            buf[(strlen(buf)-1)]='\0';
-            printf("Service:%s",buf);
+            buf[len]='\0';
+            printf("Service:%s\n",buf);
         }
         
         printf("Client :");
         fgets(buf,BUF_SIZE,stdin);
         buf[strlen(buf)-1]='\0';
-        if(!strcmp(buf,"exit"))
+        if(strncmp(buf,"quit",4)==0)
         {
             close(wfd);
             unlink(FIFO_WRITE);
             close(rfd);
             exit(0);
         }
-        write(wfd,buf,strlen(buf)+1);
+        write(wfd,buf,strlen(buf));
     }
 }
