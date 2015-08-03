@@ -15,8 +15,8 @@
 #include<string.h>
 
 #define BUF_SIZE 1024
-#define FIFO_WRITE "writefifo.dat"
-#define FIFO_READ "readfifo.dat"
+#define FIFO_WRITE "writefifo"
+#define FIFO_READ "readfifo"
 
 int main()
 {
