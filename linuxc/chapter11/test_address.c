@@ -37,7 +37,7 @@ int main()
         printf("inet_aton:\t0x%x\n",in.s_addr);
     }
 
-    if((address=inet_addr(buf))==-1)
+    if((address=inet_addr(buffer))==-1)
     {
         printf("inet_aton:\t invalid address\n");
     }
