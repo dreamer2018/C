@@ -34,7 +34,7 @@ int main()
     }
     else
     {
-        printf("inet_aton:0x%x",in.s_addr);
+        printf("inet_aton:\t0x%x\n",in.s_addr);
     }
 
     if((address=inet_addr(buf))==-1)
