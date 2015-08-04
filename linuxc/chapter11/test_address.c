@@ -70,5 +70,7 @@ int main()
     printf("inet_netof:\t0x%x\n",network);
 
     in=inet_makeaddr(network,host);
-    printf("inet_makeaddr:0x%x\n")
+    printf("inet_makeaddr:0x%x\n",in.s_addr);
+
+    return 0;
 }
