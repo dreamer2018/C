@@ -43,7 +43,7 @@ int main()
     }
     else
     {
-        printf("inet_addr:0x%x",address);
+        printf("inet_addr:\t0x%x\n",address);
     }
 
     if((address=inet_network(buffer))==-1)
@@ -52,7 +52,7 @@ int main()
     }
     else
     {  
-        printf("inet_network:0x%x",address);
+        printf("inet_network:\t0x%x\n",address);
     }
 
     if(inet_ntoa(in)==NULL)
@@ -70,7 +70,7 @@ int main()
     printf("inet_netof:\t0x%x\n",network);
 
     in=inet_makeaddr(network,host);
-    printf("inet_makeaddr:0x%x\n",in.s_addr);
+    printf("inet_makeaddr:\t0x%x\n",in.s_addr);
 
     return 0;
 }
