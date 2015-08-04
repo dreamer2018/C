@@ -57,6 +57,10 @@ int main()
 
     if(inet_ntoa(in)==NULL)
     {
-        
+        printf("inet_aton:\t invalid address\n");
+    }
+    else
+    {
+        printf("inet_aton:\t%s\n",inet_ntoa(in));
     }
 }
