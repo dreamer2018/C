@@ -39,28 +39,30 @@ int main()
 
     if((address=inet_addr(buffer))==-1)
     {
-        printf("inet_aton:\t invalid address\n");
+        printf("inet_addr:\t invalid address\n");
     }
     else
     {
-        printf("inet_aton:0x%x",address);
+        printf("inet_addr:0x%x",address);
     }
 
     if((address=inet_network(buffer))==-1)
     {
-        printf("inet_aton:\t invalid address\n");
+        printf("inet_network:\t invalid address\n");
     }
     else
     {  
-        printf("inet_aton:0x%x",address);
+        printf("inet_network:0x%x",address);
     }
 
     if(inet_ntoa(in)==NULL)
     {
-        printf("inet_aton:\t invalid address\n");
+        printf("inet_ntoa:\t invalid address\n");
     }
     else
     {
-        printf("inet_aton:\t%s\n",inet_ntoa(in));
+        printf("inet_ntoa:\t%s\n",inet_ntoa(in));
     }
+
+
 }
