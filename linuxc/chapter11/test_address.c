@@ -73,5 +73,4 @@ int main()
     printf("inet_makeaddr:\t0x%x\n",in.s_addr);
 
     return 0;
-
 }
