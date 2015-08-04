@@ -63,6 +63,12 @@ int main()
     {
         printf("inet_ntoa:\t%s\n",inet_ntoa(in));
     }
+    
+    host=inet_lnaof(in);
+    network=inet_netof(in);
+    printf("inet_lnaof:\t0x%x\n",host);
+    printf("inet_netof:\t0x%x\n",network);
 
-
+    in=inet_makeaddr(network,host);
+    printf("inet_makeaddr:0x%x\n")
 }
