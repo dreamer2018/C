@@ -21,7 +21,6 @@ int main()
     int network=0;
     unsigned int address=0;
 
-
     struct in_addr in;
     in.s_addr=0;
 
