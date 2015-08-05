@@ -11,17 +11,18 @@
 #include<sys/types.h>
 #include<unistd.h>
 #include<time.h>
+#include<stdlib.h>
 
-void display(char *string)
+void display_time(char *string)
 {
     int seconds;
     seconds=time((time_t *)NULL);
-    printf("%s,%d\n",string,second);
+    printf("%s,%d\n",string,seconds);
 }
 
 int main()
 {
-    fd_set =readfds;
+    fd_set readfds;
     struct timeval timeout;
     int ret;
 
@@ -48,7 +49,7 @@ int main()
                 exit(0);
             default:
                 getchar();
-                printf("Date is available.\n");
+                printf("Date is available now.\n");
         }
     }
 }
