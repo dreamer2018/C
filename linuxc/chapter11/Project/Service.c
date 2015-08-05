@@ -35,6 +35,7 @@ struct user users[]={{"admin","admin"},{"guest","guest"},{" "," "}};
 int find_name(char *name) //出错返回-2，找不到用户名返回-1，找到返回下标
 {
     int i;
+
     if(name==NULL)
     {
         printf("用户名无效！\n");
@@ -42,13 +43,12 @@ int find_name(char *name) //出错返回-2，找不到用户名返回-1，找到
     }
     else
     {
-        for(i=0;strcmp(users[i].name," ")!=0;i++)
+        for(i=0;users[i].name[0]!=' ';i++)
         {
             if(!strcmp(users[i].name,name))
             {
                 return i;
             }
-            
         }
         return -1;
     }
@@ -56,7 +56,7 @@ int find_name(char *name) //出错返回-2，找不到用户名返回-1，找到
 
 void send_data(int conn_fd,char *string)
 {
-    if(send(conn_fd,string,strlen(string),0)==-1)
+    if(send(conn_fd,string,strlen(string),0)<0)
     {
         perror("send");
     }
@@ -68,7 +68,7 @@ int main()
     int optval;
     int len;
     int ret;
-    int flag_recv=USERNAME;
+    int flag_recv=0;
     int switch_num;
     pid_t pid;
     struct sockaddr_in srv_sock,clt_sock;
@@ -80,29 +80,31 @@ int main()
     {
         perror("socket");
     }
-    
+
     //设置该套接字使之可以重新绑定
     optval=1;
-    len=sizeof(optval);
-    if(setsockopt(sock_fd,SOL_SOCKET,SO_REUSEADDR,&optval,len)<0)
+    
+    //len=sizeof(optval);
+    if(setsockopt(sock_fd,SOL_SOCKET,SO_REUSEADDR,&optval,sizeof(int))<0)
     {
         perror("setsockopt");
     }
     
     //初始化本地端
     memset(&srv_sock,0,sizeof(struct sockaddr_in ));
+    
     srv_sock.sin_family=AF_INET;
     srv_sock.sin_port=htons(SERV_PORT);
-    srv_sock.sin_addr.s_addr=inet_addr(INADDR_ANY);
-    
-    /*memset(sock.sin_zero,0,sizeof(sock.sin_zero));
+    srv_sock.sin_addr.s_addr=htonl(INADDR_ANY);
+   
+   /*memset(sock.sin_zero,0,sizeof(sock.sin_zero));
     conn_fd=connect(sock_fd,(struct sockaddr *)&srv_sock,sizeof(struct sockaddr_in));
     if(conn_fd<0)
     {
         perror("connect");
     }
     */
-
+    
     //绑定套接字到本地端
     if(bind(sock_fd,(struct sockaddr *)&srv_sock,sizeof(struct sockaddr_in ))<0)
     {
@@ -133,15 +135,17 @@ int main()
         {
             while(1)
             {
-                if((ret=recv(conn_fd,recv_buf,BUFMAX,0))<0)
+                if((ret=recv(conn_fd,recv_buf,sizeof(recv_buf),0))<0)
                 {
                     perror("recv");
+                    exit(1);
                 }
                 recv_buf[ret-1]='\0';
                 
                 if(flag_recv==USERNAME)
                 {
                     switch_num=find_name(recv_buf);
+                    printf("switch %d",switch_num);
                     switch(switch_num)
                     {
                         case -1:
@@ -156,9 +160,9 @@ int main()
                             break;
                     }
                 }
-                else if(flag_recv=PASSWORD)
+                else if(flag_recv==PASSWORD)
                 {
-                    if(strcmp(users[switch_num].name,recv_buf))
+                    if(!strcmp(users[switch_num].name,recv_buf))
                     {
                         send_data(conn_fd,"y\n");
                         send_data(conn_fd,"welcome login my TCP service\n");
