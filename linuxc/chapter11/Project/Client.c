@@ -26,6 +26,18 @@ int my_recv(int conn_fd,char *data_buf,int len)  //
     char *pread;
     int len_remain=0;
     int i;
+    
+    len_remain=recv(conn_fd,data_buf,len,0);
+    if(len<0)
+    {
+        perror("recv");
+    }
+    else
+    {
+        return len;
+    }
+    /*
+    printf("__Test___");
     if(len_remain<=0)
     {
         if((len_remain=recv(conn_fd,recv_buf,sizeof(recv_buf),0))<0)
@@ -52,17 +64,18 @@ int my_recv(int conn_fd,char *data_buf,int len)  //
     pread++;
 
     return i;    //读取成功
+    */
 }
-
+/*
 int get_userinfo(char *buf,int len)     //获取用户输入，存到buf中buf长度为len
 {
     int i;
-    /*
+    
     if(buf==NULL)
     {
         return -1;
     }
-    */
+   
 
     i=0;
     while(i<len)
@@ -75,8 +88,27 @@ int get_userinfo(char *buf,int len)     //获取用户输入，存到buf中buf�
         }
         i++;
     }
-}
+    printf("%s\n",buf);
+}*/
 
+int get_userinfo(char *buf,int len)
+{
+    int i;
+    int c;
+    if(buf==NULL)
+    {
+        return -1;
+    }
+    
+    i=0;
+    while((c=getchar())!='\n'&&(c!=EOF)&&(i<len-2))
+    {
+        buf[i++]=c;
+    }
+    buf[i++]='\n';
+    buf[i++]='\0';
+    return 0;
+}
 void input_userinfo(int conn_fd,char *string) //输入用户名，通过conn_fd 发出
 {
     char input_buf[32];
@@ -91,7 +123,7 @@ void input_userinfo(int conn_fd,char *string) //输入用户名，通过conn_fd 
             printf("error return from get_userinfo \n");
             exit(1);
         }
-        
+        printf("Test:%s %s",string,input_buf);
         if(send(conn_fd,input_buf,strlen(input_buf),0)<0)
         {
             perror("send");   
@@ -105,8 +137,12 @@ void input_userinfo(int conn_fd,char *string) //输入用户名，通过conn_fd 
         
         if(recv_buf[0]==VALID_USERINFO)
         {
-            printf(" %s error ,input again ",string);
             flag_userinfo=VALID_USERINFO;
+        }
+        else
+        {
+            printf(" %s error ,input again ",string);
+            flag_userinfo=INVALID_USERINFO;
         }
     }while(flag_userinfo==INVALID_USERINFO);
 }
@@ -176,7 +212,7 @@ int main(int argc,char *argv[])
 
     input_userinfo(conn_fd,"Username");
     input_userinfo(conn_fd,"Password");
-
+    printf("test\n");
     //读取欢迎信息并打印
     if((ret=my_recv(conn_fd,recv_buf,sizeof(recv_buf)))<0)
     {
@@ -187,7 +223,7 @@ int main(int argc,char *argv[])
     {
         printf("%c",recv_buf[i]);
     }
-    printf("\n");
+    printf("test_2\n");
 
     close(conn_fd);
     return 0;
