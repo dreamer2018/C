@@ -86,61 +86,6 @@ int get_userinfo(char *buf,int len)     //获取用户输入，存到buf中buf�
     return i;
 }
 */
-int get_userinfo(char *buf,int len)
-{
-    int i;
-    int c;
-    if(buf==NULL)
-    {
-        return -1;
-    }
-    
-    i=0;
-    while((c=getchar())!='\n'&&(c!=EOF)&&(i<len-2))
-    {
-        buf[i++]=c;
-    }
-    buf[i++]='\n';
-    buf[i++]='\0';
-    return 0;
-}
-void input_userinfo(int conn_fd,char *string) //输入用户名，通过conn_fd 发出
-{
-    char input_buf[32];
-    char recv_buf[BUFMAX];
-    int flag_userinfo;
-
-    do
-    {
-        printf(" %s:",string);
-        if(get_userinfo(input_buf,32)<0)
-        {
-            printf("error return from get_userinfo \n");
-            exit(1);
-        }
-        
-        if(send(conn_fd,input_buf,strlen(input_buf),0)<0)
-        {
-            perror("send");   
-        }
-        
-        if(my_recv(conn_fd,recv_buf,sizeof(recv_buf))<0)
-        {
-            printf("data to long\n");
-            exit(1);
-        }
-        
-        if(recv_buf[0]==VALID_USERINFO)
-        {
-            flag_userinfo=VALID_USERINFO;
-        }
-        else
-        {
-            printf(" %s error ,input again ",string);
-            flag_userinfo=INVALID_USERINFO;
-        }
-    }while(flag_userinfo==INVALID_USERINFO);
-}
 
 int main(int argc,char *argv[])
 {   
@@ -206,8 +151,6 @@ int main(int argc,char *argv[])
         exit(1);
     }
 
-    input_userinfo(conn_fd,"Username");
-    input_userinfo(conn_fd,"Password");
     
     //读取欢迎信息并打印
     if((ret=my_recv(conn_fd,recv_buf,sizeof(recv_buf)))<0)
