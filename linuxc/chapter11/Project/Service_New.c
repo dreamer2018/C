@@ -86,6 +86,33 @@ int main()
         
         printf("service waiting\n");
         ret=select(FD_SETSIZE , &testfds ,(fd_set *)0,(fd_set *)0,(struct timeval *)0);
+        if(ret<0)
+        {
+            perror("select");
+        }
         
+        for(fd=0;fd<FD_SETSIZE;fd++)
+        {
+            if(FD_ISSET(fd,&testfds))
+            {
+                if(fd==sock_fd)
+                {
+                    clt_len=sizeof(struct sockaddr_in);
+                    //clt_len=sizeof(clt_sock);
+                    conn_fd=accept(sock_fd,(struct sockaddr *)&clt_sock,&clt_len);
+                    FD_SET(conn_fd,&readfds);
+                    printf("adding client on fd %d\n",conn_fd);
+                }
+                else
+                {
+                    ioctl(fd,FIONREAD,&nread);
+                    
+                    if(nread==0)
+                    {
+                        close(fd);
+                    }
+                }
+            }
+        }
     }
 }
