@@ -22,22 +22,11 @@
 
 int my_recv(int conn_fd,char *data_buf,int len)  //
 {
-    char recv_buf[BUFMAX];
-    char *pread;
-    int len_remain=0;
+    static char recv_buf[BUFMAX];
+    static char *pread;
+    static int len_remain=0;
     int i;
     
-    len_remain=recv(conn_fd,data_buf,len,0);
-    if(len<0)
-    {
-        perror("recv");
-    }
-    else
-    {
-        return len;
-    }
-    /*
-    printf("__Test___");
     if(len_remain<=0)
     {
         if((len_remain=recv(conn_fd,recv_buf,sizeof(recv_buf),0))<0)
@@ -50,6 +39,7 @@ int my_recv(int conn_fd,char *data_buf,int len)  //
         }
         pread=recv_buf; //重新初始化pread
     }
+    
     for(i=0;*pread!='\n';i++)
     {
         if(i>len)
@@ -64,7 +54,6 @@ int my_recv(int conn_fd,char *data_buf,int len)  //
     pread++;
 
     return i;    //读取成功
-    */
 }
 /*
 int get_userinfo(char *buf,int len)     //获取用户输入，存到buf中buf长度为len
@@ -123,7 +112,7 @@ void input_userinfo(int conn_fd,char *string) //输入用户名，通过conn_fd 
             printf("error return from get_userinfo \n");
             exit(1);
         }
-        printf("Test:%s %s",string,input_buf);
+        
         if(send(conn_fd,input_buf,strlen(input_buf),0)<0)
         {
             perror("send");   
@@ -212,18 +201,20 @@ int main(int argc,char *argv[])
 
     input_userinfo(conn_fd,"Username");
     input_userinfo(conn_fd,"Password");
-    printf("test\n");
+    
     //读取欢迎信息并打印
     if((ret=my_recv(conn_fd,recv_buf,sizeof(recv_buf)))<0)
     {
         printf("data is too long \n");
         exit(1);
     }
-    for(i=0;i<ret;i++)
+
+    /*for(i=0;i<ret;i++)
     {
         printf("%c",recv_buf[i]);
-    }
-    printf("test_2\n");
+    }*/
+    
+    printf("%s\n",recv_buf);
 
     close(conn_fd);
     return 0;
