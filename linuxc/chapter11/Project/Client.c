@@ -20,6 +20,7 @@
 #define VALID_USERINFO 'y'      //用户信息有效
 #define BUFMAX 1024
 
+
 int my_recv(int conn_fd,char *data_buf,int len)  //
 {
     static char recv_buf[BUFMAX];
@@ -55,31 +56,36 @@ int my_recv(int conn_fd,char *data_buf,int len)  //
 
     return i;    //读取成功
 }
+
 /*
 int get_userinfo(char *buf,int len)     //获取用户输入，存到buf中buf长度为len
 {
     int i;
+    
+     
     
     if(buf==NULL)
     {
         return -1;
     }
    
-
+    
     i=0;
+    printf("len=%d\n",len);
     while(i<len)
     {
         buf[i]=getchar();
         if(buf[i]=='\n')
         {
-            buf[i++]='\0';
-            return i;
+            buf[i+1]='\0';
+            break;
         }
         i++;
     }
-    printf("%s\n",buf);
-}*/
-
+    printf("Test :%s i=%d\n",buf,i);
+    return i;
+}
+*/
 int get_userinfo(char *buf,int len)
 {
     int i;
@@ -197,6 +203,7 @@ int main(int argc,char *argv[])
     if(connect(conn_fd,(struct sockaddr *)&serv_addr,sizeof(struct sockaddr))<0)
     {
         perror("connect");
+        exit(1);
     }
 
     input_userinfo(conn_fd,"Username");
