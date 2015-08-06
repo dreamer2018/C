@@ -145,7 +145,7 @@ int main()
                 if(flag_recv==USERNAME)
                 {
                     switch_num=find_name(recv_buf);
-                    printf("switch %d",switch_num);
+                    
                     switch(switch_num)
                     {
                         case -1:
