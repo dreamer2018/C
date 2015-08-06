@@ -16,6 +16,7 @@
 #include<arpa/inet.h>
 #include<error.h>
 #include<sys/time.h>
+#include<sys/ioctl.h>
 
 #define SERV_PORT 8080
 #define MAX_LIST 10
@@ -110,6 +111,16 @@ int main()
                     if(nread==0)
                     {
                         close(fd);
+                        FD_CLR(fd,&readfds);
+                        printf("removeing clinet on fd &d\n",fd);
+                    }
+                    else
+                    {
+                        read(fd,&ch,1);
+                        sleep(5);
+                        printf("serving clinet on fd %d\n",fd);
+                        ch++;
+                        write(fd,&ch,1);
                     }
                 }
             }
