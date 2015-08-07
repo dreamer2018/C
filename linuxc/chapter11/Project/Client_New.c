@@ -59,36 +59,6 @@ int my_recv(int conn_fd,char *data_buf,int len)  //
     return i;    //读取成功
 }
 
-/*
-int get_userinfo(char *buf,int len)     //获取用户输入，存到buf中buf长度为len
-{
-    int i;
-    
-     
-    
-    if(buf==NULL)
-    {
-        return -1;
-    }
-   
-    
-    i=0;
-    printf("len=%d\n",len);
-    while(i<len)
-    {
-        buf[i]=getchar();
-        if(buf[i]=='\n')
-        {
-            buf[i+1]='\0';
-            break;
-        }
-        i++;
-    }
-    printf("Test :%s i=%d\n",buf,i);
-    return i;
-}
-*/
-
 int main(int argc,char *argv[])
 {   
     int i;
@@ -172,12 +142,12 @@ void *threadsend(void * vargp)
     int connfd = *((int *)vargp);
     
     int idata;
-    char temp[100];
+    char temp[BUFMAX];
     while(1)
     {
-        fgets(temp,100,stdin);
-        send(connfd,temp,100,0);
-        printf("          client send OK\n");
+        fgets(temp,BUFMAX,stdin);
+        send(connfd,temp,BUFMAX,0);
+        printf("    client send OK\n");
     }
 
 
@@ -188,16 +158,17 @@ void *threadsend(void * vargp)
 
 void *threadrecv(void *vargp)
 {
-    char temp[100];
+    char temp[BUFMAX];
     int connfd = *((int *)vargp);   
     while(1)
     {
         int idata = 0;
-        idata = recv(connfd,temp,100,0);
+        idata = recv(connfd,temp,BUFMAX,0);
         if(idata > 0)
         {
-            printf("server :\n%s\n",temp);
+            printf("server :%s",temp);
         }
+        //printf("Test\n");
     }
     return NULL;
 }
