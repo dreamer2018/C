@@ -18,11 +18,12 @@
 #include<sys/time.h>
 #include<sys/ioctl.h>
 
-#define SERV_PORT 8080
+#define SERV_PORT 8000
 #define MAX_LIST 10
 #define USERNAME 0
 #define PASSWORD 1
 #define BUFSIZE 1024
+
 
 int main()
 {
@@ -38,7 +39,7 @@ int main()
     pid_t pid;
     struct sockaddr_in srv_sock,clt_sock;
     char recv_buf[BUFSIZE];
-    
+    memset(fd_list,0,MAX_LIST);  
     fd_set readfds,testfds;
     
      //创建一个TCP 套接字
@@ -74,7 +75,7 @@ int main()
     {
         perror("listen");
     }
-    fd_list[0]=sock_fd;
+    fd_list[fd_count]=sock_fd;
     srv_len=sizeof(struct sockaddr_in);
     fd_count++;
     FD_ZERO(&readfds);
@@ -83,11 +84,12 @@ int main()
     {
         int fd;
         int nread;
+        int j;
         
         testfds=readfds;
         
         printf("service waiting\n");
-        ret=select(MAX_LIST+4, &testfds ,(fd_set *)0,(fd_set *)0,(struct timeval *)0);
+        ret=select(MAX_LIST, &testfds ,(fd_set *)0,(fd_set *)0,(struct timeval *)0);
         if(ret<0)
         {
             perror("select");
@@ -109,18 +111,39 @@ int main()
                 else
                 {
                     memset(recv_buf,0,sizeof(recv_buf));
-                    nread = recv(fd,recv_buf,sizeof(recv_buf),0);
-                    
+                    nread = recv(fd_list[fd],recv_buf,sizeof(recv_buf),0);
                     if(nread==0)
                     {
-                        close(fd);
-                        FD_CLR(fd,&readfds);
+                        close(fd_list[fd]);
+                        FD_CLR(fd_list[fd],&readfds);
                         printf("removeing clinet on fd %d\n",fd);
+                        if(fd!=fd_count)
+                        {
+                            for(j=fd;j<fd_count-1;j++)
+                            {
+                                fd_list[j]=fd_list[j+1];
+                            }
+                        }
+                        fd_count--;
                     }
                     else
                     {
-                        
-                        printf("recv = %s",recv_buf);
+                        if((pid=fork())==0)
+                        {
+                            printf("Tets fd_count=%d\n",fd_count);
+                            for(j=1;j<fd_count;j++)
+                            {
+                                if (fd_list[fd] == fd_list[j])
+                                    continue;
+                                printf("send test %d\n",j);
+                                if(send(fd_list[j],recv_buf,sizeof(recv_buf),0)<0)
+                                {
+                                    perror("send");
+                                }
+                            }
+                            exit(0);
+                        }
+                        //printf("recv = %s",recv_buf);
                     }
                 }
             }
