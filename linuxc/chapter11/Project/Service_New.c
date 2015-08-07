@@ -22,7 +22,7 @@
 #define MAX_LIST 10
 #define USERNAME 0
 #define PASSWORD 1
-#define BUFMAX 1024
+#define BUFSIZE 1024
 
 int main()
 {
@@ -31,11 +31,12 @@ int main()
     int optval;
     int srv_len,clt_len;
     int ret;
+    int fd_list[MAX_LIST];
     int flag_recv=0;
     int switch_num;
     pid_t pid;
     struct sockaddr_in srv_sock,clt_sock;
-    char recv_buf[BUFMAX];
+    char recv_buf[BUFSIZE];
     
     fd_set readfds,testfds;
     
@@ -72,29 +73,28 @@ int main()
     {
         perror("listen");
     }
-
+    fd_list[0]=sock_fd;
     srv_len=sizeof(struct sockaddr_in);
     
     FD_ZERO(&readfds);
     FD_SET(sock_fd,&readfds);
     while(1)
     {
-        char buf[256];
         int fd;
         int nread;
         
         testfds=readfds;
         
         printf("service waiting\n");
-        ret=select(FD_SETSIZE , &testfds ,(fd_set *)0,(fd_set *)0,(struct timeval *)0);
+        ret=select(MAX_LIST+4, &testfds ,(fd_set *)0,(fd_set *)0,(struct timeval *)0);
         if(ret<0)
         {
             perror("select");
         }
         
-        for(fd=0;fd<FD_SETSIZE;fd++)
+        for(fd=0;fd<(MAX_LIST+4);fd++)
         {
-            if(FD_ISSET(fd,&testfds))
+            if(FD_ISSET(fd_list[fd],&testfds))
             {
                 if(fd==sock_fd)
                 {
@@ -105,8 +105,8 @@ int main()
                 }
                 else
                 {
-                    memset(buf,0,sizeof(buf));
-                    nread = recv(fd,buf,sizeof(buf),0);
+                    memset(recv_buf,0,sizeof(recv_buf));
+                    nread = recv(fd,recv_buf,sizeof(recv_buf),0);
                     
                     if(nread==0)
                     {
@@ -116,7 +116,8 @@ int main()
                     }
                     else
                     {
-                        printf("recv = %s",buf);
+                        
+                        printf("recv = %s",recv_buf);
                     }
                 }
             }
