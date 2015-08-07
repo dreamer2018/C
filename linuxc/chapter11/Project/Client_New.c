@@ -20,6 +20,8 @@
 #define VALID_USERINFO 'y'      //用户信息有效
 #define BUFMAX 1024
 
+void *threadrecv(void *vargp);
+void *threadsend(void *vargp);
 
 int my_recv(int conn_fd,char *data_buf,int len)  //
 {
@@ -93,6 +95,9 @@ int main(int argc,char *argv[])
     int ret;
     int conn_fd;
     int serv_port;
+    int *clientfdp;
+    int status;
+    clientfdp=(int *)malloc(sizeof(int));
     struct sockaddr_in serv_addr;
     char recv_buf[BUFMAX];
 
@@ -150,23 +155,49 @@ int main(int argc,char *argv[])
         perror("connect");
         exit(1);
     }
-
+	pthread_t tid1,tid2;
+    printf("connected\n");
     
-    //读取欢迎信息并打印
-    if((ret=my_recv(conn_fd,recv_buf,sizeof(recv_buf)))<0)
-    {
-        printf("data is too long \n");
-        exit(1);
-    }
-
-    /*for(i=0;i<ret;i++)
-    {
-        printf("%c",recv_buf[i]);
-    }*/
-    
-    printf("%s\n",recv_buf);
-
+    pthread_create(&tid1,NULL,threadsend,&conn_fd);
+    pthread_create(&tid2,NULL,threadrecv,&conn_fd);
+    pthread_join(tid1,(void *)&status);
+    pthread_join(tid2,(void *)&status);
     close(conn_fd);
     return 0;
 }
 
+void *threadsend(void * vargp)
+{
+    //pthread_t tid2;
+    int connfd = *((int *)vargp);
+    
+    int idata;
+    char temp[100];
+    while(1)
+    {
+        fgets(temp,100,stdin);
+        send(connfd,temp,100,0);
+        printf("          client send OK\n");
+    }
+
+
+    printf("client send\n");
+    return NULL;
+}
+
+
+void *threadrecv(void *vargp)
+{
+    char temp[100];
+    int connfd = *((int *)vargp);   
+    while(1)
+    {
+        int idata = 0;
+        idata = recv(connfd,temp,100,0);
+        if(idata > 0)
+        {
+            printf("server :\n%s\n",temp);
+        }
+    }
+    return NULL;
+}
