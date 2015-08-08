@@ -24,20 +24,25 @@
 #define PASSWORD 1
 #define BUFSIZE 1024
 
+typedef struct On_Line
+{
+    char name[21];
+    int sock_fd;
+    struct On_Line *next;
+}
 
 
 int main()
 {
-        
+
     int sock_fd;
     int conn_fd;
     int fd_count=0;
     int optval;
+    int ret;
     int srv_len,clt_len;
-    in
     int fd_list[MAX_LIST];
     int flag_recv=0;
-    int swi:
     pid_t pid;
     struct sockaddr_in srv_sock,clt_sock;
     char recv_buf[BUFSIZE];
@@ -59,7 +64,7 @@ int main()
         perror("setsockopt");
     }
     
-    //初始化本地端
+    //初始化本地端               
     memset(&srv_sock,0,sizeof(struct sockaddr_in ));
     
     srv_sock.sin_family=AF_INET;
@@ -77,6 +82,7 @@ int main()
     {
         perror("listen");
     }
+
     fd_list[fd_count]=sock_fd;
     srv_len=sizeof(struct sockaddr_in);
     fd_count++;
@@ -90,7 +96,7 @@ int main()
         
         testfds=readfds;
         
-        printf("service waiting\n");
+        printf("service waiting\n"); 
         ret=select(MAX_LIST, &testfds ,(fd_set *)0,(fd_set *)0,(struct timeval *)0);
         if(ret<0)
         {
@@ -105,7 +111,7 @@ int main()
                 {
                     clt_len=sizeof(struct sockaddr_in);
                     conn_fd=accept(sock_fd,(struct sockaddr *)&clt_sock,&clt_len);
-                    FD_SET(conn_fd,&readfds);
+                    FD_SET(conn_fd,&readfds);  
                     fd_list[fd_count]=conn_fd;
                     fd_count++;
                     printf("adding client on fd %d\n",conn_fd);
