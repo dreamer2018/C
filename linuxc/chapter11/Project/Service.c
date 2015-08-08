@@ -15,127 +15,36 @@
 #include<string.h>
 #include<arpa/inet.h>
 #include<error.h>
+#include<sys/time.h>
+#include<sys/ioctl.h>
 
-#define SERV_PORT 8080
+#define SERV_PORT 8000
 #define MAX_LIST 10
 #define USERNAME 0
 #define PASSWORD 1
-#define BUFMAX 1024
-#define INYALLD_USERINFO 'n'
-#define VALID_USERINFO 'y'
-
-//链表头插法初始化
+#define BUFSIZE 1024
 
 
-#define List_Init(list,list_node_t){                    \
-    list=(list_node_t *)malloc(sizeof(list_node_t));    \
-    list->next=NULL;                                    \
-} 
 
-//链表头插法宏定义
-
-#define List_AddHead(list,newNode){         \
-    newNode->next=list->next;               \
-    list->next=newNode;                     \
-}
-
-//用户信息结构体
-struct user
-{
-    char name[40];
-    char password[40];
-};
-
-//上线用户信息保存
-
-typedef struct online
-{
-    char username[40];
-    int sock_fd;
-    struct online *next;
-} online_node_t;
-
-online_node_t *online_head;
-
-//创建用户在线信息的单向链表
-
-
-//链表初始化
-
-
-struct user users[]={{"admin","admin"},{"guest","guest"},{" "," "}};
-
-int find_name(char *name) //出错返回-2，找不到用户名返回-1，找到返回下标
-{
-    int i;
-
-    if(name==NULL)
-    {
-        printf("用户名无效！\n");
-        return -2;
-    }
-    else
-    {
-        for(i=0;users[i].name[0]!=' ';i++)
-        {
-            if(!strcmp(users[i].name,name))
-            {
-                return i;
-            }
-        }
-        return -1;
-    }
-}
-
-void send_data(int conn_fd,char *string)
-{
-
-    if(send(conn_fd,string,strlen(string),0)<0)
-    {
-        perror("send");
-    }       
-}
-
-void send_data_to(char *string)
-{
-    online_node_t *p;
-    p=online_head->next;
-    while(p!=NULL)
-    {
-        send_data(p->sock_fd,string);
-        p=p->next;
-    }
-}
-
-void On_Info_Add(char *str,int sock_fd)
-{
-    online_node_t *p;
-    p=(online_node_t *)malloc(sizeof(online_node_t));
-    strcpy(p->username,str);
-    p->sock_fd=sock_fd;
-    printf("Test_1:%s %d\n",p->username,p->sock_fd);
-    //List_AddHead(online_head,p);         
-    p->next=online_head->next;               
-    printf("test__\n");
-    online_head->next=p;                     
-    printf("Test_2:%s %d\n",p->username,p->sock_fd);
-}
 int main()
 {
+        
     int sock_fd;
     int conn_fd;
+    int fd_count=0;
     int optval;
-    int len;
-    int ret;
+    int srv_len,clt_len;
+    in
+    int fd_list[MAX_LIST];
     int flag_recv=0;
-    int switch_num;
+    int swi:
     pid_t pid;
     struct sockaddr_in srv_sock,clt_sock;
-    online_node_t *p; 
-    List_Init(p,online_node_t);
-    char recv_buf[BUFMAX];
-
-    //创建一个TCP 套接字
+    char recv_buf[BUFSIZE];
+    memset(fd_list,0,MAX_LIST);  
+    fd_set readfds,testfds;
+    
+     //创建一个TCP 套接字
     sock_fd=socket(AF_INET,SOCK_STREAM,0);
     if(sock_fd<0)
     {
@@ -168,80 +77,78 @@ int main()
     {
         perror("listen");
     }
-
-    len=sizeof(struct sockaddr_in);
-
+    fd_list[fd_count]=sock_fd;
+    srv_len=sizeof(struct sockaddr_in);
+    fd_count++;
+    FD_ZERO(&readfds);
+    FD_SET(sock_fd,&readfds);
     while(1)
     {
-        //通过accept接受客户端连接请求，返回套接字用于收发数据
-        conn_fd=accept(sock_fd,(struct sockaddr *)&clt_sock,&len);
-        if(conn_fd<0)
+        int fd;
+        int nread;
+        int j;
+        
+        testfds=readfds;
+        
+        printf("service waiting\n");
+        ret=select(MAX_LIST, &testfds ,(fd_set *)0,(fd_set *)0,(struct timeval *)0);
+        if(ret<0)
         {
-            perror("accept");
+            perror("select");
         }
-        printf("accept a new client ip: %s \n",inet_ntoa(clt_sock.sin_addr));
         
-        
-        
-        //创建一个子进程用于接受客户端连接请求
-        if((pid=fork())==0)
+        for(fd=0;fd<fd_count;fd++)
         {
-            while(1)
+            if(FD_ISSET(fd_list[fd],&testfds))
             {
-                if((ret=recv(conn_fd,recv_buf,sizeof(recv_buf),0))<0)
+                if(fd_list[fd]==sock_fd)
                 {
-                    perror("recv");
-                    exit(1);
+                    clt_len=sizeof(struct sockaddr_in);
+                    conn_fd=accept(sock_fd,(struct sockaddr *)&clt_sock,&clt_len);
+                    FD_SET(conn_fd,&readfds);
+                    fd_list[fd_count]=conn_fd;
+                    fd_count++;
+                    printf("adding client on fd %d\n",conn_fd);
                 }
-                recv_buf[ret-1]='\0';
-                
-                if(flag_recv==USERNAME)
+                else
                 {
-                    switch_num=find_name(recv_buf);
-                    
-                    switch(switch_num)
+                    memset(recv_buf,0,sizeof(recv_buf));
+                    nread = recv(fd_list[fd],recv_buf,sizeof(recv_buf),0);
+                    if(nread==0)
                     {
-                        case -1:
-                            send_data(conn_fd,"n\n");
-                            break;
-                        case -2:
-                            exit(1);
-                            break;
-                        default:
-                            send_data(conn_fd,"y\n");
-                            flag_recv=PASSWORD;
-                            break;
-                    }
-                }
-                else if(flag_recv==PASSWORD)
-                {
-                    if(!strcmp(users[switch_num].name,recv_buf))
-                    {
-                        //On_Info_Add(users[switch_num].name,conn_fd);
-                        p=(online_node_t *)malloc(sizeof(online_node_t));
-                        strcpy(p->username,users[switch_num].name);
-                        p->sock_fd=conn_fd;
-                        //List_AddHead(online_head,p);
-                        send_data(conn_fd,"y\n");
-                        send_data(conn_fd,"welcome login my TCP service\n");
-                        printf("%s login\n",users[switch_num].name);
-                        //On_Info_Add(users[switch_num].name,conn_fd);
-                        break;
+                        close(fd_list[fd]);
+                        FD_CLR(fd_list[fd],&readfds);
+                        printf("removeing clinet on fd %d\n",fd);
+                        if(fd!=fd_count)
+                        {
+                            for(j=fd;j<fd_count-1;j++)
+                            {
+                                fd_list[j]=fd_list[j+1];
+                            }
+                        }
+                        fd_count--;
                     }
                     else
                     {
-                        send_data(conn_fd,"n\n");
+                        if((pid=fork())==0)
+                        {
+                            printf("Tets fd_count=%d\n",fd_count);
+                            for(j=1;j<fd_count;j++)
+                            {
+                                if (fd_list[fd] == fd_list[j])
+                                    continue;
+                                printf("send test %d\n",j);
+                                if(send(fd_list[j],recv_buf,sizeof(recv_buf),0)<0)
+                                {
+                                    perror("send");
+                                }
+                            }
+                            exit(0);
+                        }
+                        //printf("recv = %s",recv_buf);
                     }
                 }
             }
-            close(sock_fd);
-            close(conn_fd);
-            exit(0);
-        }
-        else
-        {
-            close(conn_fd);
         }
     }
-    return 0;
 }
