@@ -20,6 +20,8 @@
 #define VALID_USERINFO 'y'      //用户信息有效
 #define BUFMAX 1024
 
+void *threadrecv(void *vargp);
+void *threadsend(void *vargp);
 
 int my_recv(int conn_fd,char *data_buf,int len)  //
 {
@@ -57,97 +59,15 @@ int my_recv(int conn_fd,char *data_buf,int len)  //
     return i;    //读取成功
 }
 
-/*
-int get_userinfo(char *buf,int len)     //获取用户输入，存到buf中buf长度为len
-{
-    int i;
-    
-     
-    
-    if(buf==NULL)
-    {
-        return -1;
-    }
-   
-    
-    i=0;
-    printf("len=%d\n",len);
-    while(i<len)
-    {
-        buf[i]=getchar();
-        if(buf[i]=='\n')
-        {
-            buf[i+1]='\0';
-            break;
-        }
-        i++;
-    }
-    printf("Test :%s i=%d\n",buf,i);
-    return i;
-}
-*/
-int get_userinfo(char *buf,int len)
-{
-    int i;
-    int c;
-    if(buf==NULL)
-    {
-        return -1;
-    }
-    
-    i=0;
-    while((c=getchar())!='\n'&&(c!=EOF)&&(i<len-2))
-    {
-        buf[i++]=c;
-    }
-    buf[i++]='\n';
-    buf[i++]='\0';
-    return 0;
-}
-void input_userinfo(int conn_fd,char *string) //输入用户名，通过conn_fd 发出
-{
-    char input_buf[32];
-    char recv_buf[BUFMAX];
-    int flag_userinfo;
-
-    do
-    {
-        printf(" %s:",string);
-        if(get_userinfo(input_buf,32)<0)
-        {
-            printf("error return from get_userinfo \n");
-            exit(1);
-        }
-        
-        if(send(conn_fd,input_buf,strlen(input_buf),0)<0)
-        {
-            perror("send");   
-        }
-        
-        if(my_recv(conn_fd,recv_buf,sizeof(recv_buf))<0)
-        {
-            printf("data to long\n");
-            exit(1);
-        }
-        
-        if(recv_buf[0]==VALID_USERINFO)
-        {
-            flag_userinfo=VALID_USERINFO;
-        }
-        else
-        {
-            printf(" %s error ,input again ",string);
-            flag_userinfo=INVALID_USERINFO;
-        }
-    }while(flag_userinfo==INVALID_USERINFO);
-}
-
 int main(int argc,char *argv[])
 {   
     int i;
     int ret;
     int conn_fd;
     int serv_port;
+    int *clientfdp;
+    int status;
+    clientfdp=(int *)malloc(sizeof(int));
     struct sockaddr_in serv_addr;
     char recv_buf[BUFMAX];
 
@@ -205,25 +125,50 @@ int main(int argc,char *argv[])
         perror("connect");
         exit(1);
     }
-
-    input_userinfo(conn_fd,"Username");
-    input_userinfo(conn_fd,"Password");
+	pthread_t tid1,tid2;
+    printf("connected\n");
     
-    //读取欢迎信息并打印
-    if((ret=my_recv(conn_fd,recv_buf,sizeof(recv_buf)))<0)
-    {
-        printf("data is too long \n");
-        exit(1);
-    }
-
-    /*for(i=0;i<ret;i++)
-    {
-        printf("%c",recv_buf[i]);
-    }*/
-    
-    printf("%s\n",recv_buf);
-
+    pthread_create(&tid1,NULL,threadsend,&conn_fd);
+    pthread_create(&tid2,NULL,threadrecv,&conn_fd);
+    pthread_join(tid1,(void *)&status);
+    pthread_join(tid2,(void *)&status);
     close(conn_fd);
     return 0;
 }
 
+void *threadsend(void * vargp)
+{
+    //pthread_t tid2;
+    int connfd = *((int *)vargp);
+    
+    int idata;
+    char temp[BUFMAX];
+    while(1)
+    {
+        fgets(temp,BUFMAX,stdin);
+        send(connfd,temp,BUFMAX,0);
+        printf("    client send OK\n");
+    }
+
+
+    printf("client send\n");
+    return NULL;
+}
+
+
+void *threadrecv(void *vargp)
+{
+    char temp[BUFMAX];
+    int connfd = *((int *)vargp);   
+    while(1)
+    {
+        int idata = 0;
+        idata = recv(connfd,temp,BUFMAX,0);
+        if(idata > 0)
+        {
+            printf("server :%s",temp);
+        }
+        //printf("Test\n");
+    }
+    return NULL;
+}
