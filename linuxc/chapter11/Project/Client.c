@@ -15,51 +15,100 @@
 #include<errno.h>
 #include<netinet/in.h>
 #include<arpa/inet.h>
+#include"conio.h"
 
 #define INVALID_USERINFO 'n'    //用户信息无效
 #define VALID_USERINFO 'y'      //用户信息有效
 #define BUFMAX 1024
 
+//函数声明部分
+
+int Chatting_Function(int argc,char *argv[]);
+void Chat_Records_Query();
 void *threadrecv(void *vargp);
 void *threadsend(void *vargp);
 
-int my_recv(int conn_fd,char *data_buf,int len)  //
+
+int main(int argc,char *argv[]) //主函数
 {
-    static char recv_buf[BUFMAX];
-    static char *pread;
-    static int len_remain=0;
-    int i;
-    
-    if(len_remain<=0)
+    char ch;
+    int flag=1;
+    //判断所输入的命令行参数够不够
+    if(argc!=5)
     {
-        if((len_remain=recv(conn_fd,recv_buf,sizeof(recv_buf),0))<0)
-        {
-            perror("recv");
-        }
-        else if(len_remain==0) //目的计算机的socket连接关闭
-        {
-            return 0;
-        }
-        pread=recv_buf; //重新初始化pread
+        printf("Usage: [-p] [serv_port] [-a] [serv_address] \n");
+        exit(1);
     }
-    
-    for(i=0;*pread!='\n';i++)
-    {
-        if(i>len)
-        {
-            return -1;
-        }
-        data_buf[i]=*pread++;
-        len_remain--;
-    }
-    //去除结束标志
-    len_remain--;
-    pread++;
 
-    return i;    //读取成功
+    //主界面，进行一系列操作
+    do
+    {
+        system("clear");
+        printf("========================================================\n");
+        printf("=++++++++++++++++++++++++++++++++++++++++++++++++++++++=\n");
+        printf("=+               Welcome To Chat Room                 +=\n");
+        printf("=+----------------------------------------------------+=\n");
+        printf("=+                                                    +=\n");
+        printf("=+          1.     Register Now                       +=\n");  //注册函数
+        printf("=+          2.     Chat     Now                       +=\n");  //登录聊天函数
+        printf("=+          3.  Look Chatting Records                 +=\n");  //聊天记录查询函数
+        printf("=+          4.        exit                            +=\n");  
+        printf("=+                                                    +=\n");  
+        printf("======================================================+=\n");
+        printf("Please Input Your Choice :");
+        ch=getch();
+        switch(ch)
+        {
+            case '1':;
+                
+            case '2':
+                system("clear");
+                Chatting_Function(argc,argv);
+                break;
+            case '3':
+                Chat_Records_Query();
+                break;
+            case '4':
+                flag=0;
+                break;
+        }
+
+    }while(flag);
+    printf("\n");
 }
-
-int main(int argc,char *argv[])
+void Chat_Records_Query()
+{
+    int flag=1;
+    char ch;
+    do
+    {
+        system("clear");
+	    printf("========================================================\n");
+	    printf("=++++++++++++++++++++++++++++++++++++++++++++++++++++++=\n");
+	    printf("=+               Chat Records Query                   +=\n");
+	    printf("=+----------------------------------------------------+=\n");
+	    printf("=+                                                    +=\n");
+	    printf("=+          1.  Group  Chat  Records                  +=\n");  //群聊记录
+	    printf("=+          2.  Private Chat Records                  +=\n");  //私聊记录
+	    printf("=+          3. Return  Previous  Step                 +=\n");  //返回上一步
+	    printf("=+                                                    +=\n");
+	    printf("========================================================\n");
+	    printf("Please Input Your Choice :");
+	    ch=getch();
+	    switch(ch)
+	    {
+	    	case '1':
+		        break;
+		    case '2':
+		            ;
+		        break;
+		    case '3':
+		        flag=0;
+		        break;
+		}
+	}while(flag);
+}
+int Chatting_Function(int argc,char *argv[])
 {   
     int i;
     int ret;
@@ -67,32 +116,32 @@ int main(int argc,char *argv[])
     int serv_port;
     int *clientfdp;
     int status;
+    pthread_t tid1,tid2;
     clientfdp=(int *)malloc(sizeof(int));
     struct sockaddr_in serv_addr;
     char recv_buf[BUFMAX];
 
-    if(argc!=5)
-    {
-        printf("Usage: [-p] [serv_port] [-a] [serv_address] \n");
-        exit(1);
-    }
     //初始化服务器端地址结构
+    
     memset(&serv_addr,0,sizeof(struct sockaddr_in));
     serv_addr.sin_family=AF_INET;
+    
     //从命令行获取服务器端的端口和地址
+    
     for(i=0;i<argc;i++)
     {
         if(strcmp("-p",argv[i])==0)
         {
             serv_port=atoi(argv[i+1]);  //将字符串转换成整型
-            if(serv_port<0||serv_port>65535)
+            
+            if(serv_port<0||serv_port>65535)  //如果端口号在这个范围之外，肯定错误，直接报错
             {
-                printf("invalid serv_addr.sin_port\n");
+                printf("invalid serv_port\n"); 
                 exit(1);
             }
             else
             {
-                serv_addr.sin_port=htons(serv_port);
+                serv_addr.sin_port=htons(serv_port);  
             }
             continue;
         }
@@ -108,13 +157,15 @@ int main(int argc,char *argv[])
         }
     }
 
-    //检测数否少输入了某项参数
+    //检测数否少输入了某项参数 
     if(serv_addr.sin_port==0||serv_addr.sin_addr.s_addr==0)
     {
         printf("Usage :[-p] [serv_addr.sin_port] [-a] [serv_address]\n");
         exit(1);
     }
+
     conn_fd=socket(AF_INET,SOCK_STREAM,0);
+    
     if(conn_fd<0)
     {
         perror("socket");
@@ -125,7 +176,7 @@ int main(int argc,char *argv[])
         perror("connect");
         exit(1);
     }
-	pthread_t tid1,tid2;
+	
     printf("connected\n");
     
     pthread_create(&tid1,NULL,threadsend,&conn_fd);
@@ -147,7 +198,7 @@ void *threadsend(void * vargp)
     {
         fgets(temp,BUFMAX,stdin);
         send(connfd,temp,BUFMAX,0);
-        printf("    client send OK\n");
+        printf("  client send OK\n");
     }
 
 
