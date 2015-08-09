@@ -9,6 +9,7 @@
 #ifndef _LIST_H
 #define _LIST_H
 
+#include<assert.h>
 #define BUFSIZE 1024
 //交互信息结构体
 
@@ -17,7 +18,7 @@ typedef struct Message
     int flag;               //0 系统命令，1 用户注册，2 用户登录，3 用户群聊,4 用户私聊
     char Sendname[21];      // 发送者，系统为system 
     char Recvname[21];      // 接收者，系统为system ，所有人为everyone 
-    char buf[BUFSIZE];      // 消息内容
+    char Message[BUFSIZE];      // 消息内容
     time_t Sendtime;        // 发送时间
     struct Message *head;
     struct Message *prev;
