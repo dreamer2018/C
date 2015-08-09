@@ -280,18 +280,32 @@ int Sign_In(int sock_fd)
         strcpy(send_buf.Message,"Sign in");
         time(&now);
         send_buf.Sendtime=now;
-
-
-        if(recv(sock_fd,&recv_buf,sizeof(message_node_t),0))
+        if(send(sock_fd,&send_buf,sizeof(message_node_t),0))
         {
             perror("send");
             exit(0);
         }
         
+        if(recv(sock_fd,&recv_buf,sizeof(message_node_t),0))
+        {
+            perror("send");
+            exit(0);
+        }
+        if(strncmp(recv_buf.Message,"Succ",4))
+        {
+            printf("Signin Success \n");
+            break;
+        }
+        else
+        {
+            printf("Nickname Or Password Error,\n");
+            printf("Please Try Again\n");
+        }
+        
     }
 }
 
-int Chatting_Function(int flag,int argc,char *argv[])
+int Chatting_Function(int sign,int argc,char *argv[])
 {   
     int i;
     int ret;
@@ -368,7 +382,7 @@ int Chatting_Function(int flag,int argc,char *argv[])
     }
     else if(sign==2)
     {
-           
+        Sign_In(conn_fd);       
     }
 
     
