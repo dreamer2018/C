@@ -17,21 +17,42 @@
 #include<error.h>
 #include<sys/time.h>
 #include<sys/ioctl.h>
-
+#include<time.h>
 
 /*
  * List为自定义的头文件，里面包含了对单向链表的操作：
  * List_Init(head,list_node_t)  单向链表初始化宏定义
  * List_AddHead(head,newNode)   单项链表头插发宏定义
 */
-#include<List.h>
+#include"List.h"
 
+/*
+ *  Persits.h 封装了部分文件操作函数，具体如下：
+ *  int Register_Persist(message_node_t *buf)  //用户信息写入函数，返回1 表示操作成功，0 表示操作失败
+ *  int UserInfo_Perst_Select(char *name,message_node_t *buf)  //通过用户名，找到用户相关信息返回1表示找到，0表示未找到
+ *  int Play_Perst_Update(const message_node_t *data)  ////将参数所指向的新信息写入到文件中，返回0表示操作失败，返回1表示操作成功
+ */
 
+#include"Persist.h"
 //宏定义
 
 #define SERV_PORT 8080      //端口
 #define MAX_LIST 10         //最长等待序列
 #define BUFSIZE 1024        //缓冲区大小
+//交互信息结构体
+
+/*
+typedef struct Message
+{
+    int flag;               //0 系统命令，1 用户注册，2 用户登录，3 用户群聊,4 用户私聊
+    char Sendname[21];      // 发送者，系统为system 
+    char Recvname[21];      // 接收者，系统为system ，所有人为everyone 
+    char Message[BUFSIZE];      // 消息内容
+    time_t Sendtime;        // 发送时间
+    struct Message *head;
+    struct Message *prev;
+}
+*/
 
 /*
  *  在线用户链表  
@@ -42,24 +63,134 @@ typedef struct On_Line
     char name[21];    //在线的用户名
     int sock_fd;      //在线用户套接字描述符
     struct On_Line *next;
+    struct On_Line *prev;
 } online_node_t;
+
+//在线用户数量
+
+int fd_count=0;
 
 //在线用户链表头结点（全局变量）
 
 online_node_t *head;
 
+int Info_Match(char *name,char *passwd)  //信息匹配函数，用于进行密码和用户名的验证,0表示操作失败，1表示操作成功
+{
+    int rtn=0;
+    message_node_t buf;
+    if(UserInfo_Perst_Select(name,&buf))
+    {
+        if(!strcmp(buf.Sendname,passwd))
+        {
+            rtn=1;
+        }
+    }
+    return rtn;
+}
+
+int Log_Service(int conn_fd) //登录/注册信息服务函数
+{
+    int rtn=0;
+    message_node_t recv_buf,send_buf;
+    time_t now;
+    if(recv(conn_fd,&recv_buf,sizeof(message_node_t),0))
+    {
+        perror("recv");
+        exit(0);
+    }
+    switch(recv_buf.flag)
+    {
+        case 1:
+            if(Register_Persist(&recv_buf))
+            {
+                send_buf.flag=0;
+                strcpy(send_buf.Sendname,"system");
+                strcpy(send_buf.Recvname,recv_buf.Sendname);
+                time(&now);
+                send_buf.Sendtime=now;
+                strcpy(send_buf.Message,"Sucess");
+                if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+                {
+                    perror("send");
+                    exit(0);
+                }
+            }
+            else
+            {      
+                send_buf.flag=0;
+                strcpy(send_buf.Sendname,"system");
+                strcpy(send_buf.Recvname,recv_buf.Sendname);
+                time(&now);
+                send_buf.Sendtime=now;
+                strcpy(send_buf.Message,"Fail");
+                if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+                {
+                    perror("send");
+                    exit(0);
+                }
+            }
+            close(conn_fd);
+            break;
+        case 2:
+            for(int i=0;i<3;i++)
+            {
+                memset(&send_buf,0,sizeof(message_node_t));
+                int sign=0;
+                if(Info_Match(recv_buf.Sendname,recv_buf.Recvname))
+                {
+                    send_buf.flag=0;
+                    strcpy(send_buf.Sendname,"system");
+                    strcpy(send_buf.Recvname,recv_buf.Sendname);
+                    time(&now);
+                    send_buf.Sendtime=now;
+                    strcpy(send_buf.Message,"Success");
+                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+                    {
+                        perror("send");
+                        exit(0);
+                    }
+                    rtn=1;
+                    break;
+                }
+                else
+                {
+                    send_buf.flag=0;
+                    strcpy(send_buf.Sendname,"system");
+                    strcpy(send_buf.Recvname,recv_buf.Sendname);
+                    time(&now);
+                    send_buf.Sendtime=now;
+                    strcpy(send_buf.Message,"Fail");
+                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+                    {
+                        perror("send");
+                        exit(0);
+                    }
+                    sign=1;
+                }
+                memset(&recv_buf,0,sizeof(message_node_t));
+                if(sign)
+                { 
+                    if(recv(conn_fd,&recv_buf,sizeof(message_node_t),0))
+                    {
+                        perror("recv");
+                        exit(0);
+                    }   
+                }
+            }
+    }
+    return rtn;
+}
 int main()
 {
-
     int sock_fd;
     int conn_fd;
-    int fd_count=0;
     int optval;
     int ret;
     int srv_len,clt_len;
     int fd_list[MAX_LIST];
     int flag_recv=0;
-    pid_t pid;
+    int sign=0;
+    pid_t pid,vpid;
     struct sockaddr_in srv_sock,clt_sock;
     char recv_buf[BUFSIZE];
     List_Init(head,online_node_t);
@@ -114,6 +245,7 @@ int main()
         testfds=readfds;
         
         printf("service waiting\n"); 
+        
         ret=select(MAX_LIST, &testfds ,(fd_set *)0,(fd_set *)0,(struct timeval *)0);
         if(ret<0)
         {
@@ -128,11 +260,20 @@ int main()
                 {
                     clt_len=sizeof(struct sockaddr_in);
                     conn_fd=accept(sock_fd,(struct sockaddr *)&clt_sock,&clt_len);
-                                                //使用vfork创建一个进程，用于进行密码注册用户或登录验证
-                    FD_SET(conn_fd,&readfds);  
-                    fd_list[fd_count]=conn_fd;
-                    fd_count++;
-                    printf("adding client on fd %d\n",conn_fd);
+                    
+                    //使用vfork创建一个进程，用于进行密码注册用户或登录验证
+                    
+                    if(vpid=vfork()==0)
+                    {
+                        sign=Log_Service(conn_fd);
+                        if(sign=1)
+                        {
+                            FD_SET(conn_fd,&readfds);  
+                            fd_list[fd_count]=conn_fd;
+                            fd_count++;
+                            printf("adding client on fd %d\n",conn_fd);
+                        }
+                    }
                 }
                 else  //否则，表示是已在线的用户出现操作
                 {
@@ -156,12 +297,10 @@ int main()
                     {
                         if((pid=fork())==0)  //创建一个新的进程，用于处理用户发来的信息，解析并转发给其他用户
                         {
-                            printf("Tets fd_count=%d\n",fd_count);
                             for(j=1;j<fd_count;j++)
                             {
                                 if (fd_list[fd] == fd_list[j])
                                     continue;
-                                printf("send test %d\n",j);
                                 if(send(fd_list[j],recv_buf,sizeof(recv_buf),0)<0)
                                 {
                                     perror("send");
