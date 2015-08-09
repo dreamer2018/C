@@ -264,6 +264,7 @@ int Register(int sock_fd)
 int Sign_In(int sock_fd)
 {
     char Nickname[21],Password[21];
+    time_t now;
     message_node_t recv_buf,send_buf;
     for(int i=0;i<3;i++)
     {
@@ -276,13 +277,17 @@ int Sign_In(int sock_fd)
         send_buf.flag=2;
         strcpy(send_buf.Sendname,Nickname);
         strcpy(send_buf.Recvname,Password);
-        
+        strcpy(send_buf.Message,"Sign in");
+        time(&now);
+        send_buf.Sendtime=now;
+
+
         if(recv(sock_fd,&recv_buf,sizeof(message_node_t),0))
         {
             perror("send");
             exit(0);
         }
-
+        
     }
 }
 
