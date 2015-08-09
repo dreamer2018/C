@@ -88,7 +88,7 @@ int Info_Match(char *name,char *passwd)  //信息匹配函数，用于进行密�
     return rtn;
 }
 
-int Log_Service(int conn_fd) //登录/注册信息服务函数
+int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
 {
     int rtn=0;
     message_node_t recv_buf,send_buf;
@@ -149,6 +149,7 @@ int Log_Service(int conn_fd) //登录/注册信息服务函数
                         perror("send");
                         exit(0);
                     }
+                    strcpy(newName,recv_buf.Sendname);
                     rtn=1;
                     break;
                 }
@@ -180,6 +181,26 @@ int Log_Service(int conn_fd) //登录/注册信息服务函数
     }
     return rtn;
 }
+void Send_Message(message_node_t *buf)
+{
+    online_node_t *t;
+    t=head->next;
+    switch(buf->flag)
+    {
+        case 3:
+            for(int j=1;j<fd_count;j++)
+            {
+                if (t==head->prev || !strcmp(t->name,buf->Sendname))
+                    continue;
+                if(send(t->sock_fd,buf,sizeof(online_node_t),0)<0)
+                {
+                    perror("send");
+                }
+                t=t->next;
+            }
+            break;
+    }
+}
 int main()
 {
     int sock_fd;
@@ -187,14 +208,13 @@ int main()
     int optval;
     int ret;
     int srv_len,clt_len;
-    int fd_list[MAX_LIST];
     int flag_recv=0;
     int sign=0;
     pid_t pid,vpid;
     struct sockaddr_in srv_sock,clt_sock;
-    char recv_buf[BUFSIZE];
+    message_node_t recv_buf;
+    online_node_t *p;
     List_Init(head,online_node_t);
-    memset(fd_list,0,MAX_LIST);  
     fd_set readfds,testfds;
     
      //创建一个TCP 套接字
@@ -230,10 +250,13 @@ int main()
     {
         perror("listen");
     }
-
-    fd_list[fd_count]=sock_fd;
-    srv_len=sizeof(struct sockaddr_in);
+    
+    p=(online_node_t *)malloc(sizeof(online_node_t));
+    strcpy(p->name,"system");
+    p->sock_fd=sock_fd;
+    List_AddHead(head,p);
     fd_count++;
+    srv_len=sizeof(struct sockaddr_in);
     FD_ZERO(&readfds); 
     FD_SET(sock_fd,&readfds);
     while(1)
@@ -241,7 +264,8 @@ int main()
         int fd;
         int nread;
         int j;
-        
+        online_node_t *s;
+        s=head->next;
         testfds=readfds;
         
         printf("service waiting\n"); 
@@ -254,9 +278,9 @@ int main()
         
         for(fd=0;fd<fd_count;fd++)
         {
-            if(FD_ISSET(fd_list[fd],&testfds))  //检测出现响应的在不在在线用户链表中，不在责不进行操作，直接跳过
+            if(FD_ISSET(s->sock_fd,&testfds))  //检测出现响应的在不在在线用户链表中，不在责不进行操作，直接跳过
             {
-                if(fd_list[fd]==sock_fd) //如果响应的是监听套接字，则说明是一个新的用户请求
+                if(s->sock_fd==sock_fd) //如果响应的是监听套接字，则说明是一个新的用户请求
                 {
                     clt_len=sizeof(struct sockaddr_in);
                     conn_fd=accept(sock_fd,(struct sockaddr *)&clt_sock,&clt_len);
@@ -265,11 +289,15 @@ int main()
                     
                     if(vpid=vfork()==0)
                     {
-                        sign=Log_Service(conn_fd);
+                        char newName[21];
+                        sign=Log_Service(conn_fd,newName);
                         if(sign=1)
                         {
-                            FD_SET(conn_fd,&readfds);  
-                            fd_list[fd_count]=conn_fd;
+                            FD_SET(conn_fd,&readfds);
+                            p=(online_node_t *)malloc(sizeof(online_node_t));
+                            strcpy(p->name,newName);
+                            p->sock_fd=conn_fd;
+                            List_AddHead(head,p);
                             fd_count++;
                             printf("adding client on fd %d\n",conn_fd);
                         }
@@ -277,41 +305,28 @@ int main()
                 }
                 else  //否则，表示是已在线的用户出现操作
                 {
-                    memset(recv_buf,0,sizeof(recv_buf));  //每次先将缓冲区清空
-                    nread = recv(fd_list[fd],recv_buf,sizeof(recv_buf),0); //接受用户发送来的数据
+                    memset(&recv_buf,0,sizeof(message_node_t));  //每次先将缓冲区清空
+                    nread = recv(s->sock_fd,&recv_buf,sizeof(message_node_t),0); //接受用户发送来的数据
                     if(nread==0) //如果数据长度为零，则表示用户离开
                     {
-                        close(fd_list[fd]);                
-                        FD_CLR(fd_list[fd],&readfds);
+                        close(s->sock_fd);                
+                        FD_CLR(s->sock_fd,&readfds);
                         printf("removeing clinet on fd %d\n",fd);
-                        if(fd!=fd_count)
-                        {
-                            for(j=fd;j<fd_count-1;j++)
-                            {
-                                fd_list[j]=fd_list[j+1];
-                            }
-                        }
+                        List_FreeNode(s);
                         fd_count--;
                     }
                     else 
                     {
                         if((pid=fork())==0)  //创建一个新的进程，用于处理用户发来的信息，解析并转发给其他用户
                         {
-                            for(j=1;j<fd_count;j++)
-                            {
-                                if (fd_list[fd] == fd_list[j])
-                                    continue;
-                                if(send(fd_list[j],recv_buf,sizeof(recv_buf),0)<0)
-                                {
-                                    perror("send");
-                                }
-                            }
+                            Send_Message(&recv_buf);
                             exit(0);
                         }
                         //printf("recv = %s",recv_buf);
                     }
                 }
             }
+            s=s->next;
         }
     }
 }
