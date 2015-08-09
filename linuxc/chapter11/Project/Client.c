@@ -16,14 +16,16 @@
 #include<netinet/in.h>
 #include<arpa/inet.h>
 #include"conio.h"
+#include"List.h"
 
-#define INVALID_USERINFO 'n'    //用户信息无效
-#define VALID_USERINFO 'y'      //用户信息有效
+#define STRMAX 100
+
+
 #define BUFMAX 1024
 
 //函数声明部分
 
-int Chatting_Function(int argc,char *argv[]);
+int Chatting_Function(int flag,int argc,char *argv[]);
 void Chat_Records_Query();
 void *threadrecv(void *vargp);
 void *threadsend(void *vargp);
@@ -33,6 +35,7 @@ int main(int argc,char *argv[]) //主函数
 {
     char ch;
     int flag=1;
+    int sign;
     //判断所输入的命令行参数够不够
     if(argc!=5)
     {
@@ -59,11 +62,14 @@ int main(int argc,char *argv[]) //主函数
         ch=getch();
         switch(ch)
         {
-            case '1':;
-                
-            case '2':
+            case '1':
+                sign=1;
                 system("clear");
-                Chatting_Function(argc,argv);
+                Chatting_Function(sign,argc,argv); 
+            case '2':
+                sign=2;
+                system("clear");
+                Chatting_Function(sign,argc,argv);
                 break;
             case '3':
                 Chat_Records_Query();
@@ -108,7 +114,119 @@ void Chat_Records_Query()
 		}
 	}while(flag);
 }
-int Chatting_Function(int argc,char *argv[])
+
+void passwd(char *password)
+{
+    int i,flag;
+    char ch;
+    for(i=0;;i++)
+    {
+        ch=getch();
+        if(ch=='\n')
+        {
+            printf("\n");
+            break;
+        }
+        if(i<20)
+        {
+            password[i]=ch;
+            putchar('*');
+        }
+    }
+    if(i<20)
+    {
+        password[i]='\0';
+    }
+    else
+    {
+        password[20]='\0';
+    }
+}
+void getname(char *name)
+{
+    int i,flag;
+    char ch;
+    for(i=0;;i++)
+    {
+        ch=getch();
+        if(ch=='\n')
+        {
+            printf("\n");
+            break;
+        }
+        if(i<20)
+        {
+            name[i]=ch;
+            putchar(name[i]);
+        }
+    }
+    if(i<20)
+    {
+        name[i]='\0';
+    }
+    else
+    {
+        name[20]='\0';
+    }
+}
+
+
+int getpasswd(char *password)
+{
+    char passwd_first[21];
+    char passwd_again[21];
+
+    printf("Please Input Your Password:");
+    passwd(passwd_first);
+    
+    printf("Please Input Your Password Again:");
+    passwd(passwd_again);
+    
+    if(strcmp(passwd_first,passwd_again))
+    {
+        strcpy(password,"Error\n");
+        return 0;
+    }
+    strcpy(password,passwd_again);
+    return 1;
+}
+void Get_info(char *Nickname,char *Password)
+{
+    int i,j;
+    printf("Please Input Your Nickname:");
+    //getname(Nickname);
+    scanf("%s",Nickname);
+    getchar();
+    for(i=0;i<10;i++)
+    {
+        if(!getpasswd(Password))
+        {
+            printf("Two Entered Password Diff,Please Try Again!\n");
+        }
+        else if(strlen(Password)<6)
+        {
+            printf("This Password Less Than Six Characters!\n");
+        }
+        else
+        {
+            break;
+        }
+    }
+    printf("Nickname:%s Password:%s\n",Nickname,Password);
+}
+
+int Register(int sock_fd)
+{
+    message_node_t recv_buf;
+    message_node_t send_buf;
+    
+    char Nickname[21],Password[21];
+    for(int i=0;i<3;i++)
+    {
+        Get_info();
+    }
+}
+int Chatting_Function(int flag,int argc,char *argv[])
 {   
     int i;
     int ret;
@@ -120,7 +238,8 @@ int Chatting_Function(int argc,char *argv[])
     clientfdp=(int *)malloc(sizeof(int));
     struct sockaddr_in serv_addr;
     char recv_buf[BUFMAX];
-
+    char Nickname[21];
+    char Password[21];
     //初始化服务器端地址结构
     
     memset(&serv_addr,0,sizeof(struct sockaddr_in));
@@ -176,8 +295,17 @@ int Chatting_Function(int argc,char *argv[])
         perror("connect");
         exit(1);
     }
-	
+
     printf("connected\n");
+    if(sign==1)
+    {
+        Register(conn_fd);
+    }
+    else if(sign==2)
+    {
+           
+    }
+
     
     pthread_create(&tid1,NULL,threadsend,&conn_fd);
     pthread_create(&tid2,NULL,threadrecv,&conn_fd);
@@ -200,7 +328,6 @@ void *threadsend(void * vargp)
         send(connfd,temp,BUFMAX,0);
         printf("  client send OK\n");
     }
-
 
     printf("client send\n");
     return NULL;
