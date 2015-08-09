@@ -17,6 +17,9 @@
 #include<arpa/inet.h>
 #include"conio.h"
 #include"List.h"
+#include<time.h>
+
+
 
 #define STRMAX 100
 
@@ -190,6 +193,7 @@ int getpasswd(char *password)
     strcpy(password,passwd_again);
     return 1;
 }
+
 void Get_info(char *Nickname,char *Password)
 {
     int i,j;
@@ -217,15 +221,71 @@ void Get_info(char *Nickname,char *Password)
 
 int Register(int sock_fd)
 {
+    int rtn=0;
     message_node_t recv_buf;
     message_node_t send_buf;
-    
+    time_t now; 
     char Nickname[21],Password[21];
+    for(int i=0;;i++)
+    {
+        Get_info(Nickname,Password);
+        memset(&send_buf,0,sizeof(message_node_t));
+        send_buf.flag=1;
+        strcpy(send_buf.Sendname,Nickname);
+        strcpy(send_buf.Recvname,Password);
+        strcpy(send_buf.Message,"Register");
+        time(&now);
+        send_buf.Sendtime=now;
+        if(send(sock_fd,&send_buf,sizeof(message_node_t),0))
+        {
+            perror("send");
+            exit(0);
+        }
+        memset(&send_buf,0,sizeof(message_node_t));
+        if(recv(sock_fd,&recv_buf,sizeof(message_node_t),0))
+        {
+            perror("send");
+            exit(0);
+        }
+        if(!strncmp(recv_buf.Message,"Succ",4))
+        {
+            printf("Register Success !\n");
+            rtn=1;
+            break;
+        }
+        else if(!strncmp(recv_buf.Message,"Fail",4))
+        {
+            printf("Registr Fail!\n");
+        }
+    }
+    return rtn;
+}
+
+int Sign_In(int sock_fd)
+{
+    char Nickname[21],Password[21];
+    message_node_t recv_buf,send_buf;
     for(int i=0;i<3;i++)
     {
-        Get_info();
+        printf("Please Input Your Nickname:");
+        //getname(Nickname);
+        scanf("%s",Nickname);
+        getchar();
+        printf("Please Input Your Password:");
+        passwd(Password);
+        send_buf.flag=2;
+        strcpy(send_buf.Sendname,Nickname);
+        strcpy(send_buf.Recvname,Password);
+        
+        if(recv(sock_fd,&recv_buf,sizeof(message_node_t),0))
+        {
+            perror("send");
+            exit(0);
+        }
+
     }
 }
+
 int Chatting_Function(int flag,int argc,char *argv[])
 {   
     int i;
