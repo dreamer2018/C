@@ -409,11 +409,11 @@ void *threadsend(void * vargp)
     time_t now;
     while(1)
     {
-        time(&now);
-
+        printf("\033[34m ME:");
         fgets(temp,BUFMAX,stdin);
+        //gets(temp);
+        printf("\033[0m");
         send(connfd,temp,BUFMAX,0);
-        printf("  client send OK\n");
     }
     
     printf("client send\n");
@@ -429,10 +429,12 @@ void *threadrecv(void *vargp)
     {
         int idata = 0;
         idata = recv(connfd,temp,BUFMAX,0);
+        printf("\033[36m");
         if(idata > 0)
         {
             printf("server :%s",temp);
         }
+        printf("\033[0m");
         //printf("Test\n");
     }
     return NULL;
