@@ -50,18 +50,18 @@ int main(int argc,char *argv[]) //主函数
     do
     {
         system("clear");
-        printf("========================================================\n");
-        printf("=++++++++++++++++++++++++++++++++++++++++++++++++++++++=\n");
-        printf("=+               Welcome To Chat Room                 +=\n");
-        printf("=+----------------------------------------------------+=\n");
-        printf("=+                                                    +=\n");
-        printf("=+          1.     Register Now                       +=\n");  //注册函数
-        printf("=+          2.     Chat     Now                       +=\n");  //登录聊天函数
-        printf("=+          3.  Look Chatting Records                 +=\n");  //聊天记录查询函数
-        printf("=+          4.        exit                            +=\n");  
-        printf("=+                                                    +=\n");  
-        printf("======================================================+=\n");
-        printf("Please Input Your Choice :");
+        printf("\t\t========================================================\n");
+        printf("\t\t=++++++++++++++++++++++++++++++++++++++++++++++++++++++=\n");
+        printf("\t\t=+               Welcome To Chat Room                 +=\n");
+        printf("\t\t=+----------------------------------------------------+=\n");
+        printf("\t\t=+                                                    +=\n");
+        printf("\t\t=+          1.     Register Now                       +=\n");  //注册函数
+        printf("\t\t=+          2.     Chat     Now                       +=\n");  //登录聊天函数
+        printf("\t\t=+          3.  Look Chatting Records                 +=\n");  //聊天记录查询函数
+        printf("\t\t=+          4.        exit                            +=\n");  
+        printf("\t\t=+                                                    +=\n");  
+        printf("\t\t======================================================+=\n");
+        printf("\t\tPlease Input Your Choice :");
         ch=getch();
         switch(ch)
         {
@@ -92,17 +92,17 @@ void Chat_Records_Query()
     do
     {
         system("clear");
-	    printf("========================================================\n");
-	    printf("=++++++++++++++++++++++++++++++++++++++++++++++++++++++=\n");
-	    printf("=+               Chat Records Query                   +=\n");
-	    printf("=+----------------------------------------------------+=\n");
-	    printf("=+                                                    +=\n");
-	    printf("=+          1.  Group  Chat  Records                  +=\n");  //群聊记录
-	    printf("=+          2.  Private Chat Records                  +=\n");  //私聊记录
-	    printf("=+          3. Return  Previous  Step                 +=\n");  //返回上一步
-	    printf("=+                                                    +=\n");
-	    printf("========================================================\n");
-	    printf("Please Input Your Choice :");
+	    printf("\t\t========================================================\n");
+	    printf("\t\t=++++++++++++++++++++++++++++++++++++++++++++++++++++++=\n");
+	    printf("\t\t=+               Chat Records Query                   +=\n");
+	    printf("\t\t=+----------------------------------------------------+=\n");
+	    printf("\t\t=+                                                    +=\n");
+	    printf("\t\t=+          1.  Group  Chat  Records                  +=\n");  //群聊记录
+	    printf("\t\t=+          2.  Private Chat Records                  +=\n");  //私聊记录
+	    printf("\t\t=+          3. Return  Previous  Step                 +=\n");  //返回上一步
+	    printf("\t\t=+                                                    +=\n");
+	    printf("\t\t========================================================\n");
+	    printf("\t\tPlease Input Your Choice :");
 	    ch=getch();
 	    switch(ch)
 	    {
@@ -222,11 +222,12 @@ void Get_info(char *Nickname,char *Password)
 int Register(int sock_fd)
 {
     int rtn=0;
+    int i;
     message_node_t recv_buf;
     message_node_t send_buf;
     time_t now; 
     char Nickname[21],Password[21];
-    for(int i=0;;i++)
+    for(i=0;;i++)
     {
         Get_info(Nickname,Password);
         memset(&send_buf,0,sizeof(message_node_t));
@@ -236,15 +237,15 @@ int Register(int sock_fd)
         strcpy(send_buf.Message,"Register");
         time(&now);
         send_buf.Sendtime=now;
-        if(send(sock_fd,&send_buf,sizeof(message_node_t),0))
+        if(send(sock_fd,&send_buf,sizeof(message_node_t),0)<0)
         {
-            perror("send");
+            perror("Test:send");
             exit(0);
         }
         memset(&send_buf,0,sizeof(message_node_t));
-        if(recv(sock_fd,&recv_buf,sizeof(message_node_t),0))
+        if(recv(sock_fd,&recv_buf,sizeof(message_node_t),0)<0)
         {
-            perror("send");
+            perror("recv");
             exit(0);
         }
         if(!strncmp(recv_buf.Message,"Succ",4))
@@ -263,10 +264,11 @@ int Register(int sock_fd)
 
 int Sign_In(int sock_fd)
 {
+    int i;
     char Nickname[21],Password[21];
     time_t now;
     message_node_t recv_buf,send_buf;
-    for(int i=0;i<3;i++)
+    for(i=0;i<3;i++)
     {
         printf("Please Input Your Nickname:");
         //getname(Nickname);
