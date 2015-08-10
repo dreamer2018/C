@@ -231,7 +231,7 @@ void Send_Message(message_node_t *buf)
     t=head->next;
     for(j=0;j<fd_count;j++)
     {
-        if (t->sock_fd==head->prev->sock_fd)
+        if (t->sock_fd==head->prev->sock_fd || !strcmp(t->name,buf->Sendname))
             continue;
         if(send(t->sock_fd,buf,sizeof(online_node_t),0)<0)
         {
