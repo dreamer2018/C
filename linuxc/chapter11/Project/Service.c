@@ -101,32 +101,48 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
     switch(recv_buf.flag)
     {
         case 1:
-            if(Register_Persist(&recv_buf))
-            {
+            if(UserInfo_SelectByName(recv_buf.Sendname))  //对用户名存在性进行检测，如果存在，则直接返回
+            {  
                 send_buf.flag=0;
                 strcpy(send_buf.Sendname,"system");
                 strcpy(send_buf.Recvname,recv_buf.Sendname);
                 time(&now);
                 send_buf.Sendtime=now;
-                strcpy(send_buf.Message,"Sucess");
+                strcpy(send_buf.Message,"Your Nickname Already Exists!");
                 if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
                 {
                     perror("send");
                     exit(0);
                 }
-            }
-            else
-            {      
-                send_buf.flag=0;
-                strcpy(send_buf.Sendname,"system");
-                strcpy(send_buf.Recvname,recv_buf.Sendname);
-                time(&now);
-                send_buf.Sendtime=now;
-                strcpy(send_buf.Message,"Fail");
-                if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+            }else
+            {
+                if(Register_Persist(&recv_buf))
                 {
-                    perror("send");
-                    exit(0);
+                    send_buf.flag=0;
+                    strcpy(send_buf.Sendname,"system");
+                    strcpy(send_buf.Recvname,recv_buf.Sendname);
+                    time(&now);
+                    send_buf.Sendtime=now;
+                    strcpy(send_buf.Message,"Sucess");
+                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+                    {
+                        perror("send");
+                        exit(0);
+                    }
+                }
+                else
+                {      
+                    send_buf.flag=0;
+                    strcpy(send_buf.Sendname,"system");
+                    strcpy(send_buf.Recvname,recv_buf.Sendname);
+                    time(&now);
+                    send_buf.Sendtime=now;
+                    strcpy(send_buf.Message,"Writing To File Fail !");
+                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+                    {
+                        perror("send");
+                        exit(0);
+                    }
                 }
             }
             close(conn_fd);
@@ -160,7 +176,7 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
                     strcpy(send_buf.Recvname,recv_buf.Sendname);
                     time(&now);
                     send_buf.Sendtime=now;
-                    strcpy(send_buf.Message,"Fail");
+                    strcpy(send_buf.Message,"ERROR Incorrect Username Or Password!");
                     if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
                     {
                         perror("send");
