@@ -237,9 +237,10 @@ int Register(int sock_fd)
         strcpy(send_buf.Message,"Register");
         time(&now);
         send_buf.Sendtime=now;
+        printf("Test\n");
         if(send(sock_fd,&send_buf,sizeof(message_node_t),0)<0)
         {
-            perror("Test:send");
+            perror("send");
             exit(0);
         }
         memset(&send_buf,0,sizeof(message_node_t));
@@ -254,9 +255,9 @@ int Register(int sock_fd)
             rtn=1;
             break;
         }
-        else if(!strncmp(recv_buf.Message,"Fail",4))
+        else
         {
-            printf("Registr Fail!\n");
+            printf("%s\n",recv_buf.Message);
         }
     }
     return rtn;
@@ -282,13 +283,13 @@ int Sign_In(int sock_fd)
         strcpy(send_buf.Message,"Sign in");
         time(&now);
         send_buf.Sendtime=now;
-        if(send(sock_fd,&send_buf,sizeof(message_node_t),0))
+        if(send(sock_fd,&send_buf,sizeof(message_node_t),0)<0)
         {
             perror("send");
             exit(0);
         }
         
-        if(recv(sock_fd,&recv_buf,sizeof(message_node_t),0))
+        if(recv(sock_fd,&recv_buf,sizeof(message_node_t),0)<0)
         {
             perror("send");
             exit(0);
