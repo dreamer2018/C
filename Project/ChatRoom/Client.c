@@ -18,15 +18,19 @@
 #include"conio.h"
 #include"List.h"
 #include<time.h>
-
+//#include"Persist.h"
 
 
 #define STRMAX 100
 
 
-#define BUFMAX 1024
+#define BUFMAX 512
 
 //函数声明部分
+char UserName[21];
+
+
+
 
 int Chatting_Function(int flag,int argc,char *argv[]);
 void Chat_Records_Query();
@@ -68,7 +72,8 @@ int main(int argc,char *argv[]) //主函数
             case '1':
                 sign=1;
                 system("clear");
-                Chatting_Function(sign,argc,argv); 
+                Chatting_Function(sign,argc,argv);
+                break;
             case '2':
                 sign=2;
                 system("clear");
@@ -294,17 +299,16 @@ int Sign_In(int sock_fd)
             perror("send");
             exit(0);
         }
-        if(strncmp(recv_buf.Message,"Succ",4))
+        if(!strncmp(recv_buf.Message,"Succ",4))
         {
             printf("Signin Success \n");
             break;
         }
         else
         {
-            printf("Nickname Or Password Error,\n");
+            printf("Nickname Or Password Error\n");
             printf("Please Try Again\n");
         }
-        
     }
 }
 
@@ -381,14 +385,13 @@ int Chatting_Function(int sign,int argc,char *argv[])
     printf("connected\n");
     if(sign==1)
     {
-        Register(conn_fd);
+        return Register(conn_fd);
     }
     else if(sign==2)
     {
         Sign_In(conn_fd);       
     }
 
-    
     pthread_create(&tid1,NULL,threadsend,&conn_fd);
     pthread_create(&tid2,NULL,threadrecv,&conn_fd);
     pthread_join(tid1,(void *)&status);
@@ -399,18 +402,20 @@ int Chatting_Function(int sign,int argc,char *argv[])
 
 void *threadsend(void * vargp)
 {
-    //pthread_t tid2;
     int connfd = *((int *)vargp);
-    
     int idata;
     char temp[BUFMAX];
+    message_node_t buf;
+    time_t now;
     while(1)
     {
+        time(&now);
+
         fgets(temp,BUFMAX,stdin);
         send(connfd,temp,BUFMAX,0);
         printf("  client send OK\n");
     }
-
+    
     printf("client send\n");
     return NULL;
 }

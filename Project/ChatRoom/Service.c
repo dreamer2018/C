@@ -210,7 +210,19 @@ void Send_Message(message_node_t *buf)
         case 3:
             for(j=1;j<fd_count;j++)
             {
-                if (t==head->prev || !strcmp(t->name,buf->Sendname))
+                if (t->sock_fd==head->prev->sock_fd)
+                    continue;
+                if(send(t->sock_fd,buf,sizeof(online_node_t),0)<0)
+                {
+                    perror("send");
+                }
+                t=t->next;
+            }
+            break;
+        case 4:
+            for(j=1;j<fd_count;j++)
+            {
+                if (t->sock_fd==head->prev->sock_fd||strcmp(t->name,buf->Recvname))
                     continue;
                 if(send(t->sock_fd,buf,sizeof(online_node_t),0)<0)
                 {
@@ -284,8 +296,9 @@ int main()
         int fd;
         int nread;
         int j;
+        int flag=0;
         online_node_t *s;
-        s=head->next;
+        s=head;
         testfds=readfds;
         
         printf("service waiting\n"); 
@@ -298,6 +311,9 @@ int main()
         
         for(fd=0;fd<fd_count;fd++)
         {
+            if(flag!=1)
+                s=s->next;
+            flag=0;
             printf(" %d name:%s  sock_fd:%d\n",fd,s->name,s->sock_fd);
             if(FD_ISSET(s->sock_fd,&testfds))  //检测出现响应的在不在在线用户链表中，不在责不进行操作，直接跳过
             {
@@ -330,8 +346,12 @@ int main()
                     nread = recv(s->sock_fd,&recv_buf,sizeof(message_node_t),0); //接受用户发送来的数据
                     if(nread==0) //如果数据长度为零，则表示用户离开
                     {
-                        close(s->sock_fd);                
-                        FD_CLR(s->sock_fd,&readfds);
+                        online_node_t *r;
+                        r=s;
+                        s=s->next;
+                        flag=1;
+                        FD_CLR(r->sock_fd,&readfds);
+                        close(r->sock_fd);                
                         printf("removeing clinet on fd %d\n",fd);
                         List_FreeNode(s);
                         fd_count--;
@@ -347,7 +367,6 @@ int main()
                     }
                 }
             }
-            s=s->next;
         }
     }
 }
