@@ -91,8 +91,10 @@ int Info_Match(char *name,char *passwd)  //信息匹配函数，用于进行密�
 int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
 {
     int rtn=0;
+    int i;
     message_node_t recv_buf,send_buf;
     time_t now;
+    printf("Test conn_fd=%d\n",conn_fd);
     if(recv(conn_fd,&recv_buf,sizeof(message_node_t),0)<0)
     {
         perror("recv");
@@ -124,7 +126,8 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
                     time(&now);
                     send_buf.Sendtime=now;
                     strcpy(send_buf.Message,"Sucess");
-                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+                    strcpy(newName,recv_buf.Sendname);
+                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
                     {
                         perror("send");
                         exit(0);
@@ -148,7 +151,7 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
             close(conn_fd);
             break;
         case 2:
-            for(int i=0;i<3;i++)
+            for(i=0;i<3;i++)
             {
                 memset(&send_buf,0,sizeof(message_node_t));
                 int sign=0;
@@ -199,12 +202,13 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
 }
 void Send_Message(message_node_t *buf)
 {
+    int j;
     online_node_t *t;
     t=head->next;
     switch(buf->flag)
     {
         case 3:
-            for(int j=1;j<fd_count;j++)
+            for(j=1;j<fd_count;j++)
             {
                 if (t==head->prev || !strcmp(t->name,buf->Sendname))
                     continue;
@@ -294,12 +298,13 @@ int main()
         
         for(fd=0;fd<fd_count;fd++)
         {
+            printf(" %d name:%s  sock_fd:%d\n",fd,s->name,s->sock_fd);
             if(FD_ISSET(s->sock_fd,&testfds))  //检测出现响应的在不在在线用户链表中，不在责不进行操作，直接跳过
             {
                 if(s->sock_fd==sock_fd) //如果响应的是监听套接字，则说明是一个新的用户请求
                 {
                     clt_len=sizeof(struct sockaddr_in);
-                    conn_fd=accept(sock_fd,(struct sockaddr *)&clt_sock,&clt_len);
+                    conn_fd=accept(s->sock_fd,(struct sockaddr *)&clt_sock,&clt_len);
                     
                     //使用vfork创建一个进程，用于进行密码注册用户或登录验证
                     
@@ -309,13 +314,13 @@ int main()
                         sign=Log_Service(conn_fd,newName);
                         if(sign=1)
                         {
-                            FD_SET(conn_fd,&readfds);
                             p=(online_node_t *)malloc(sizeof(online_node_t));
                             strcpy(p->name,newName);
                             p->sock_fd=conn_fd;
-                            List_AddHead(head,p);
+                            List_AddHead(head,p);                     
+                            FD_SET(p->sock_fd,&readfds);
                             fd_count++;
-                            printf("adding client on fd %d\n",conn_fd);
+                            printf("adding client on fd %d name:%s\n",p->sock_fd,p->name);
                         }
                     }
                 }
