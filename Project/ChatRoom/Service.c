@@ -80,7 +80,9 @@ int Info_Match(char *name,char *passwd)  //信息匹配函数，用于进行密�
     message_node_t buf;
     if(UserInfo_Perst_Select(name,&buf))
     {
-        if(!strcmp(buf.Sendname,passwd))
+        printf("name: %s passwd:%s\n",buf.Sendname,buf.Recvname);
+        printf("Name: %s Passwd:%s\n",name,passwd);
+        if(!strcmp(buf.Recvname,passwd))
         {
             rtn=1;
         }
@@ -103,47 +105,66 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
     switch(recv_buf.flag)
     {
         case 1:
-            if(UserInfo_SelectByName(recv_buf.Sendname))  //对用户名存在性进行检测，如果存在，则直接返回
-            {  
-                send_buf.flag=0;
-                strcpy(send_buf.Sendname,"system");
-                strcpy(send_buf.Recvname,recv_buf.Sendname);
-                time(&now);
-                send_buf.Sendtime=now;
-                strcpy(send_buf.Message,"Your Nickname Already Exists!");
-                if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
-                {
-                    perror("send");
-                    exit(0);
-                }
-            }else
+            for(i=0;;i++)
             {
-                if(Register_Persist(&recv_buf))
-                {
+                int sign=0;
+                printf("Service Test: %d ",i);
+                if(UserInfo_SelectByName(recv_buf.Sendname))  //对用户名存在性进行检测，如果存在，则直接返回
+                {  
                     send_buf.flag=0;
                     strcpy(send_buf.Sendname,"system");
                     strcpy(send_buf.Recvname,recv_buf.Sendname);
                     time(&now);
                     send_buf.Sendtime=now;
-                    strcpy(send_buf.Message,"Sucess");
-                    strcpy(newName,recv_buf.Sendname);
+                    strcpy(send_buf.Message,"Your Nickname Already Exists!");
                     if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
                     {
                         perror("send");
                         exit(0);
                     }
+                    sign=1;
                 }
                 else
-                {      
-                    send_buf.flag=0;
-                    strcpy(send_buf.Sendname,"system");
-                    strcpy(send_buf.Recvname,recv_buf.Sendname);
-                    time(&now);
-                    send_buf.Sendtime=now;
-                    strcpy(send_buf.Message,"Writing To File Fail !");
-                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
+                {
+                    if(Register_Persist(&recv_buf))
                     {
-                        perror("send");
+                        send_buf.flag=0;
+                        strcpy(send_buf.Sendname,"system");
+                        strcpy(send_buf.Recvname,recv_buf.Sendname);
+                        time(&now);
+                        send_buf.Sendtime=now;
+                        strcpy(send_buf.Message,"Success");
+                        strcpy(newName,recv_buf.Sendname);
+                        if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
+                        {
+                            perror("send");
+                            exit(0);
+                        }
+                        break;
+                    }
+                    else
+                    {      
+                        send_buf.flag=0;
+                        strcpy(send_buf.Sendname,"system");
+                        strcpy(send_buf.Recvname,recv_buf.Sendname);
+                        time(&now);
+                        send_buf.Sendtime=now;
+                        strcpy(send_buf.Message,"Writing To File Fail !");
+                        if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
+                        {
+                            perror("send");
+                            exit(0);
+                        }
+                    }
+                    sign=1;
+                }
+
+                if(sign)
+                {
+                    memset(&recv_buf,0,sizeof(message_node_t));
+                    if(recv(conn_fd,&recv_buf,sizeof(message_node_t),0)<0)
+                    {
+                        perror("recv");
                         exit(0);
                     }
                 }
@@ -153,6 +174,7 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
         case 2:
             for(i=0;i<3;i++)
             {
+                printf("Service Test %d\n",i);
                 memset(&send_buf,0,sizeof(message_node_t));
                 int sign=0;
                 if(Info_Match(recv_buf.Sendname,recv_buf.Recvname))
@@ -163,6 +185,7 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
                     time(&now);
                     send_buf.Sendtime=now;
                     strcpy(send_buf.Message,"Success");
+                    printf("Sign in success \n");
                     if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
                     {
                         perror("send");
@@ -180,6 +203,7 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
                     time(&now);
                     send_buf.Sendtime=now;
                     strcpy(send_buf.Message,"ERROR Incorrect Username Or Password!");
+                    printf("%s\n",send_buf.Message);
                     if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
                     {
                         perror("send");
@@ -205,10 +229,22 @@ void Send_Message(message_node_t *buf)
     int j;
     online_node_t *t;
     t=head->next;
+    for(j=0;j<fd_count;j++)
+    {
+        if (t->sock_fd==head->prev->sock_fd)
+            continue;
+        if(send(t->sock_fd,buf,sizeof(online_node_t),0)<0)
+        {
+            perror("send");
+        }
+        t=t->next;
+    }
+    
+    /*
     switch(buf->flag)
     {
         case 3:
-            for(j=1;j<fd_count;j++)
+            for(j=0;j<fd_count;j++)
             {
                 if (t->sock_fd==head->prev->sock_fd)
                     continue;
@@ -220,7 +256,7 @@ void Send_Message(message_node_t *buf)
             }
             break;
         case 4:
-            for(j=1;j<fd_count;j++)
+            for(j=0;j<fd_count;j++)
             {
                 if (t->sock_fd==head->prev->sock_fd||strcmp(t->name,buf->Recvname))
                     continue;
@@ -232,6 +268,7 @@ void Send_Message(message_node_t *buf)
             }
             break;
     }
+    */
 }
 int main()
 {
@@ -241,7 +278,6 @@ int main()
     int ret;
     int srv_len,clt_len;
     int flag_recv=0;
-    int sign=0;
     pid_t pid,vpid;
     struct sockaddr_in srv_sock,clt_sock;
     message_node_t recv_buf;
@@ -326,9 +362,11 @@ int main()
                     
                     if(vpid=vfork()==0)
                     {
+                        int sign=0;
                         char newName[21];
                         sign=Log_Service(conn_fd,newName);
-                        if(sign=1)
+                        
+                        if(sign==1)
                         {
                             p=(online_node_t *)malloc(sizeof(online_node_t));
                             strcpy(p->name,newName);
@@ -353,7 +391,7 @@ int main()
                         FD_CLR(r->sock_fd,&readfds);
                         close(r->sock_fd);                
                         printf("removeing clinet on fd %d\n",fd);
-                        List_FreeNode(s);
+                        List_FreeNode(r);
                         fd_count--;
                     }
                     else 
