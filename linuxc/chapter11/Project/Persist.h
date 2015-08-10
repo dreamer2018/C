@@ -11,7 +11,7 @@
 
 static const char USERINFO_DATA_FILE[] = "UserInfo.dat";
 
-int Register_Persist(message_node_t *buf)  //用户信息写入函数
+int Register_Persist(message_node_t *buf)  //用户信息写入函数,返回1 表示操作成功，0 表示操作失败
 {
     int rtn=0;
 	FILE *fp;
@@ -29,14 +29,14 @@ int Register_Persist(message_node_t *buf)  //用户信息写入函数
 	return rtn;
 }
 
-int UserInfo_Perst_Select(char *name,message_node_t *buf)  //通过用户名，找到用户相关信息 
+int UserInfo_SelectByName(char *name) //通过用户名查找该用户是否存在,1表示存在。0表示不存在
 {
 	int found=0;
+    message_node_t buf;
     FILE *fp;
     fp=fopen(USERINFO_DATA_FILE,"rb");
     if(fp==NULL)
     {
-        printf("文件打开失败！");
         return 0;
     }
     else
@@ -54,7 +54,31 @@ int UserInfo_Perst_Select(char *name,message_node_t *buf)  //通过用户名，�
     return found;
 }
 
-//将参数所指向的新信息写入到文件中
+int UserInfo_Perst_Select(char *name,message_node_t *buf)  //通过用户名，找到用户相关信息返回1表示找到，0表示未找到 
+{
+	int found=0;
+    FILE *fp;
+    fp=fopen(USERINFO_DATA_FILE,"rb");
+    if(fp==NULL)
+    {
+        printf("文件打开失败！");
+    }
+    else
+    {
+        while(fread(buf,sizeof(message_node_t),1,fp)==1)
+        {
+        	if(!strcmp(name,buf->Sendname))
+            {
+                found=1;
+                break;
+            }
+        }
+    }
+    fclose(fp);
+    return found;
+}
+
+//将参数所指向的新信息写入到文件中，返回0表示操作失败，返回1表示操作成功
 int Play_Perst_Update(const message_node_t *data) 
 {
 	FILE *fp = fopen(USERINFO_DATA_FILE, "rb+");
@@ -82,6 +106,7 @@ int Play_Perst_Update(const message_node_t *data)
 	return found;
 }
 
+/*
 int Play_Perst_SelectAll(play_list_t list) 
 {
 	int found=0;
@@ -117,7 +142,7 @@ int Play_Perst_SelectAll(play_list_t list)
 	fclose(fp); 
 	return found;
 }
-
+*/
 
 
 
