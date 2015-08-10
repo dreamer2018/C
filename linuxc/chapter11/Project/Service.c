@@ -93,7 +93,7 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
     int rtn=0;
     message_node_t recv_buf,send_buf;
     time_t now;
-    if(recv(conn_fd,&recv_buf,sizeof(message_node_t),0))
+    if(recv(conn_fd,&recv_buf,sizeof(message_node_t),0)<0)
     {
         perror("recv");
         exit(0);
@@ -109,7 +109,7 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
                 time(&now);
                 send_buf.Sendtime=now;
                 strcpy(send_buf.Message,"Your Nickname Already Exists!");
-                if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+                if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
                 {
                     perror("send");
                     exit(0);
@@ -138,7 +138,7 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
                     time(&now);
                     send_buf.Sendtime=now;
                     strcpy(send_buf.Message,"Writing To File Fail !");
-                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
                     {
                         perror("send");
                         exit(0);
@@ -160,7 +160,7 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
                     time(&now);
                     send_buf.Sendtime=now;
                     strcpy(send_buf.Message,"Success");
-                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
                     {
                         perror("send");
                         exit(0);
@@ -177,7 +177,7 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
                     time(&now);
                     send_buf.Sendtime=now;
                     strcpy(send_buf.Message,"ERROR Incorrect Username Or Password!");
-                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0))
+                    if(send(conn_fd,&send_buf,sizeof(message_node_t),0)<0)
                     {
                         perror("send");
                         exit(0);
@@ -187,7 +187,7 @@ int Log_Service(int conn_fd,char *newName) //登录/注册信息服务函数
                 memset(&recv_buf,0,sizeof(message_node_t));
                 if(sign)
                 { 
-                    if(recv(conn_fd,&recv_buf,sizeof(message_node_t),0))
+                    if(recv(conn_fd,&recv_buf,sizeof(message_node_t),0)<0)
                     {
                         perror("recv");
                         exit(0);
