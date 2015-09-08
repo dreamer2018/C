@@ -1,98 +1,80 @@
+/*************************************************************************
+	> File Name: linked_1.c
+	> Author: ZhouPan / github:dreamer2018 
+	> Mail: zhoupans_mail@163.com
+	> Blog: blog.csdn.net/it_dream_er
+	> Created Time: Mon 07 Sep 2015 04:00:50 PM CST
+ ************************************************************************/
+
 #include<stdio.h>
-#include<stdlib.h>
+#include<malloc.h>
+
 typedef struct student
 {
     int id;
     float score;
     struct student *next;
 }stu;
-void Head()
+
+stu *Tail()
 {
-	int a;
-    float b;
-    stu *New,*Old,*head,*p;
-    New=Old=(stu *)malloc(sizeof(stu));
-    printf("Please Input:");
-    scanf("%d %f",&a,&b);
-    getchar();
-    if(0!=a)
+    int id;
+    float score;
+    stu *head,*p,*q;
+    head=(stu *)malloc(sizeof(stu));
+    p=head;
+    while(1)
     {
-        New->id=a;
-        New->score=b;
-        New->next=NULL;
-    }
-    while(New->id!=0)
-    {
-        New=(stu *)malloc(sizeof(stu));
-        printf("Please Input:");
-        scanf("%d %f",&a,&b);
+        scanf("%d %f",&id,&score);
         getchar();
-        if(a!=0)
+        if(id<=0)
         {
-            New->id=a;
-            New->score=b;
-            head=New;
-            New->next=Old;
-            Old=New;
-        }
-        else
-        {
-            free(New);
             break;
         }
+        q=(stu *)malloc(sizeof(stu));
+        q->id=id;
+        q->score=score;
+        p->next=q;
+        p=q;
     }
-    p=head;
-    while(p!=NULL)
-    {
-        printf("id :%d\t",p->id);
-        printf("score:%0.2f\n",p->score);
-        p=p->next;
-    }
+
+    return head;
 }
-void Tail()
+
+int Merge(stu *head)
 {
-    int a;
-    float b;
-    stu *New,*Old,*head,*p;
-    New=Old=(stu *)malloc(sizeof(stu));
-    printf("Please Input:");
-    scanf("%d %f",&a,&b);
-    getchar();
-    if(0!=a)
+    if(head==NULL || head->next==NULL)
     {
-        head=New;
-        New->id=a;
-        New->score=b;
+        printf("pos id error\n");
+        return 0;
     }
-    while(New->id!=0)
+    stu *p,*q;
+    p=head->next;
+    head->next=NULL;
+    while(p)
     {
-        New=(stu *)malloc(sizeof(stu));
-        printf("Please Input:");
-        scanf("%d %f",&a,&b);
-        getchar();
-        if(a!=0)
-        {
-            New->id=a;
-            New->score=b;
-            Old->next=New;
-            New->next=NULL;
-            Old=New;
-        }
-        else
-        {
-            free(New);
-            break;
-        }
+        q=p->next;
+        p->next=head->next;
+        head->next=p;
+        p=q;
     }
-    p=head;
-    while(p!=NULL)
-    {
-        printf("id :%d\t",p->id);
-        printf("score:%0.2f\n",p->score);
-        p=p->next;
-    }
+    return 1;
 }
-void main()
+int main()
 {
-    Head();
+    stu *head,*p;
+    head=Tail();
+    p=head;
+    while(p->next)
+    {
+        p=p->next;
+        printf("%d %f\n",p->id,p->score);
+    }
+    Merge(head);
+    p=head;
+    while(p->next)
+    {
+        p=p->next;
+        printf("%d %f\n",p->id,p->score);
+    }
 }
