@@ -22,11 +22,25 @@ void Init(Linklist *h)
     h->next=h;
 }
 
-int Insert(Linklist *h,LinkType l)
+Linklist *Insert()
 {
-    
+    int l;
+    Linklist *p,*q,*r;
+    p=(Linklist *)malloc(sizeof(Linklist));
+    scanf("%d",l);
+    p->i=l;
+
+    while(1)
+    {
+        q=(Linklist *)malloc(sizeof(Linklist));
+        q->i=l;
+        q->p
+    }
+    q->next=p;
+
 }
+ 
 int main()
 {
-       
+     
 }
