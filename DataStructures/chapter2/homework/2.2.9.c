@@ -63,14 +63,16 @@ stu *Merge(stu *A,stu *B)
 
     printf("%d %d\n",m,n);
     q=C;
-    r=A;
-    s=B;
+    s=A;
+    r=B;
     if(m<=n)
     {
-        while(i<=m)
+        while(i<=2*m)
         {
+     //       i++;
             if(i%2)
             {
+                printf("Test_______\n");
                 p=s->next;
                 s=s->next;
             }
@@ -80,8 +82,9 @@ stu *Merge(stu *A,stu *B)
                 r=r->next;
             }
             q->next=p;
-            q=q->next;
+            q=p->next;
             i++;
+            printf("i=%d\n",i);
         }
         q->next=r;    
     }
@@ -105,11 +108,12 @@ stu *Merge(stu *A,stu *B)
         }
         p->next=r;  
     }
-return C;
+    return C;
 }
 
 int main()
 {
+    int i=0;
     stu *head1,*head2,*head3,*p;
     head1=Tail();
     head2=Tail();
@@ -117,20 +121,23 @@ int main()
     while(p->next)
     {
         p=p->next;
-        printf("%d %f\n",p->id,p->score);
+        printf("%d %3.2f\t",p->id,p->score);
     }
+    printf("\n");
     p=head2;
     while(p->next)
     {
         p=p->next;
-        printf("%d %f\n",p->id,p->score);
+        printf("%d %3.2f\t",p->id,p->score);
     }
+    printf("\n");
     head3=Merge(head1,head2);
 
     p=head3;
     printf("Test\n");
-    while(p->next)
+    while(p)
     {
+        i++;
         printf("test\n");
         p=p->next;
         printf("%d %f\n",p->id,p->score);
