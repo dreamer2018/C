@@ -44,13 +44,8 @@ stu *Tail()
     return head;
 }
 
-int Find(stu *s)
+void Find(stu *s)
 {
-    if(s==NULL)
-    {
-        printf("Linklist is empty!\n");
-        return 0;
-    }
     stu *p,*q;
     p=s;
     while(p->next->next!=s)
@@ -60,7 +55,6 @@ int Find(stu *s)
     q=p->next;
     p->next=s;
     free(q);
-    return 1;
 }
 
 int Merge(stu *head)
