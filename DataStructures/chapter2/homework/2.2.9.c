@@ -69,20 +69,20 @@ stu *Merge(stu *A,stu *B)
     {
         while(i<=2*m)
         {
-     //       i++;
+            q=q->next;
             if(i%2)
             {
                 printf("Test_______\n");
-                p=s->next;
+                q=s->next;
                 s=s->next;
             }
             else
             {
-                p=r->next;
+                q=r->next;
                 r=r->next;
             }
-            q->next=p;
-            q=p->next;
+            //q->next=p;
+            //q=p->next;
             i++;
             printf("i=%d\n",i);
         }
