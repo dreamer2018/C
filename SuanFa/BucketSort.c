@@ -33,7 +33,7 @@ void Print(int *a,int n) //输出排序结果
 
 int main()
 {
-    int num[]={1,5,8,3,4};
+    int num[]={1,5,8,3,4}; //需要排序的数据
     int Bucket[10];
     memset(Bucket,0,sizeof(Bucket));
     Sort(num,5,Bucket);
