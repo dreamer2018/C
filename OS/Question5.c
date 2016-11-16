@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 
 #define PROCESS_NAME_LEN 32        /*进程名称的最大长度*/
 #define MIN_SLICE    10            /*最小碎片的大小*/
@@ -22,10 +23,10 @@ struct free_block_type *free_block;
 
 /*每个进程分配到的内存块的描述*/
 struct allocated_block{
-    int pid;
-    int size;
-    int start_addr;
-    char process_name[PROCESS_NAME_LEN];
+    int pid;            /*进程pid*/
+    int size;           /*内存块大小*/
+    int start_addr;     /*开始地址*/
+    char process_name[PROCESS_NAME_LEN]; /*进程名*/
     struct allocated_block *next;
 };
 /*进程分配内存块链表的首指针*/
@@ -33,9 +34,46 @@ struct allocated_block *allocated_block_head = NULL;
 int mem_size=DEFAULT_MEM_SIZE;        /*内存大小*/
 int ma_algorithm = MA_FF;            /*当前分配算法*/
 static int pid = 0;                    /*初始pid*/
-int flag = 0；                         /*设置内存大小标志*/
+int flag = 0;                      /*设置内存大小标志*/
 
-main()
+/*函数声明*/
+struct free_block_type* init_free_block(int mem_size);
+void display_menu();
+int set_mem_size();
+void set_algorithm();
+void rearrange(int algorithm);
+void rearrange_FF();
+void rearrange_BF();
+void rearrange_WF();
+int new_process();
+int allocate_mem(struct allocated_block *ab);
+void kill_process();
+int free_mem(struct allocated_block *ab);
+int dispose(struct allocated_block *free_ab);
+int display_mem_usage();
+void do_exit();
+void swap(int,int);
+int find_process(int);
+
+int find_process(int pid)
+{
+
+}
+
+
+void swap(int a,int b)
+{
+    int tmp;
+    tmp = a;
+    a = b;
+    b = tmp;
+}
+void do_exit()
+{
+
+}
+
+int main()
 {
     char choice;
     pid=0;
@@ -47,12 +85,12 @@ main()
         choice=getchar();	//获取用户输入
         switch(choice)
         {
-            case ‘1’: set_mem_size(); break; 	//设置内存大小
-            case ‘2’: set_algorithm();flag=1； break;	//设置分配算法
-            case ‘3’: new_process(); flag=1； break;	//创建新进程
-            case ‘4’: kill_process(); flag=1； break;	//删除进程
-            case ‘5’: display_mem_usage(); flag=1； break;	//显示内存使用
-            case ‘0’: do_exit(); exit(0);		//释放链表并退出
+            case '1': set_mem_size(); break; 	//设置内存大小
+            case '2': set_algorithm();flag=1; break;	//设置分配算法
+            case '3': new_process(); flag=1; break;	//创建新进程
+            case '4': kill_process();flag=1; break;	//删除进程
+            case '5': display_mem_usage(); flag=1; break;	//显示内存使用
+            case '0': do_exit(); exit(0);		//释放链表并退出
             default: break;
         }
     }
@@ -75,7 +113,7 @@ struct free_block_type* init_free_block(int mem_size)
 }
 
 /*显示菜单*/
-display_menu()
+void display_menu()
 {
     printf("\n");
     printf("1 - Set memory size (default=%d)\n", DEFAULT_MEM_SIZE);
@@ -85,8 +123,8 @@ display_menu()
     printf("5 - Display memory usage \n");
     printf("0 - Exit\n");
 }
-/*设置内存的大小*/
-set_mem_size()
+/*设置总内存的大小*/
+int set_mem_size()
 {
     int size;
     if(flag!=0)  //防止重复设置
@@ -101,10 +139,11 @@ set_mem_size()
         mem_size = size;
         free_block->size = mem_size;
     }
-    flag=1;  return 1;
+    flag=1;
+    return 1;
 }
 /* 设置当前的分配算法 */
-set_algorithm()
+void set_algorithm()
 {
     int algorithm;
     printf("\t1 - First Fit\n");
@@ -116,7 +155,7 @@ set_algorithm()
     rearrange(ma_algorithm);
 }
 /*按指定的算法整理内存空闲块链表*/
-rearrange(int algorithm)
+void rearrange(int algorithm)
 {
     switch(algorithm)
     {
@@ -128,7 +167,7 @@ rearrange(int algorithm)
 
 
 /*按FF算法重新整理内存空闲块链表*/
-rearrange_FF()
+void rearrange_FF()
 {
     struct free_block_type *tmp, *work;
     printf("Rearrange free blocks for FF \n");
@@ -153,18 +192,18 @@ rearrange_FF()
 }
 /*按BF算法重新整理内存空闲块链表*/
 
-rearrange_BF()
+void rearrange_BF()
 {
 	//请自行补充
 }
 /*按WF算法重新整理内存空闲块链表*/
 
-rearrange_WF()
+void rearrange_WF()
 {
     //请自行补充
 }
 /*创建新的进程，主要是获取内存的申请数量*/
-new_process()
+int new_process()
 {
     struct allocated_block *ab;
     int size;
@@ -209,20 +248,15 @@ int allocate_mem(struct allocated_block *ab)
     {
         if(fbt->size>=request_size)/*分配后空闲空间足够大，则分割*/
         {
-            //自行补充******** }
-            else
-            {   /*分割后空闲区成为小碎片，一起分配*/
- 		        //自行补充******** }
-                return 1;
-            }
-            pre = fbt;
-            fbt = fbt->next;
+            //自行补充********
         }
-        return -1;
+        pre = fbt;
+        fbt = fbt->next;
     }
+    return -1;
     /*删除进程，归还分配的存储空间，并删除描述该进程内存分配的节点*/
 }
-kill_process()
+void kill_process()
 {
     struct allocated_block *ab;
     int pid;
@@ -291,11 +325,12 @@ int dispose(struct allocated_block *free_ab)
     free(ab);
     return 2;
 }
-display_mem_usage()
+int display_mem_usage()
 {
     struct free_block_type *fbt=free_block;
     struct allocated_block *ab=allocated_block_head;
-    if(fbt==NULL) return(-1);
+    if(fbt==NULL)
+        return(-1);
     printf("----------------------------------------------------------\n");
 
     /* 显示空闲区 */
