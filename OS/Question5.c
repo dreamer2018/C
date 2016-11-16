@@ -53,9 +53,9 @@ int dispose(struct allocated_block *free_ab);
 int display_mem_usage();
 void do_exit();
 void swap(int,int);
-int find_process(int);
+struct allocated_block* find_process(int);
 
-int find_process(int pid)
+struct allocated_block* find_process(int pid)
 {
 
 }
@@ -150,8 +150,11 @@ void set_algorithm()
     printf("\t2 - Best Fit \n");
     printf("\t3 - Worst Fit \n");
     scanf("%d", &algorithm);
-    if(algorithm>=1 && algorithm <=3) ma_algorithm=algorithm;
-	//按指定算法重新排列空闲区链表
+    if(algorithm>=1 && algorithm <=3)
+    {
+        ma_algorithm=algorithm;
+	    //按指定算法重新排列空闲区链表
+    }
     rearrange(ma_algorithm);
 }
 /*按指定的算法整理内存空闲块链表*/
@@ -209,14 +212,21 @@ int new_process()
     int size;
     int ret;
     ab=(struct allocated_block *)malloc(sizeof(struct allocated_block));
-    if(!ab) exit(-5);
+    if(!ab)
+    {
+        exit(-5);
+    }
+
     ab->next = NULL;
     pid++;
     sprintf(ab->process_name, "PROCESS-%02d", pid);
     ab->pid = pid;
     printf("Memory for %s:", ab->process_name);
     scanf("%d", &size);
-    if(size>0) ab->size=size;
+    if(size>0)
+    {
+        ab->size=size;
+    }
     ret = allocate_mem(ab);  /* 从空闲区分配内存，ret==1表示分配ok*/
     /*如果此时allocated_block_head尚未赋值，则赋值*/
     if((ret==1) &&(allocated_block_head == NULL))
@@ -303,6 +313,7 @@ int free_mem(struct allocated_block *ab)
     rearrange(algorithm); /*重新按当前的算法排列空闲区*/
     return 1;
 }
+
 /*释放ab数据结构节点*/
 int dispose(struct allocated_block *free_ab)
 {
@@ -325,17 +336,22 @@ int dispose(struct allocated_block *free_ab)
     free(ab);
     return 2;
 }
+
 int display_mem_usage()
 {
     struct free_block_type *fbt=free_block;
     struct allocated_block *ab=allocated_block_head;
+
     if(fbt==NULL)
-        return(-1);
+    {
+        return -1;
+    }
     printf("----------------------------------------------------------\n");
 
     /* 显示空闲区 */
     printf("Free Memory:\n");
     printf("%20s %20s\n", "      start_addr", "       size");
+
     while(fbt!=NULL)
     {
         printf("%20d %20d\n", fbt->start_addr, fbt->size);
@@ -344,11 +360,13 @@ int display_mem_usage()
     /* 显示已分配区 */
     printf("\nUsed Memory:\n");
     printf("%10s %20s %10s %10s\n", "PID", "ProcessName", "start_addr", " size");
+
     while(ab!=NULL)
     {
         printf("%10d %20s %10d %10d\n", ab->pid, ab->process_name, ab->start_addr, ab->size);
         ab=ab->next;
     }
+
     printf("----------------------------------------------------------\n");
     return 0;
 }
