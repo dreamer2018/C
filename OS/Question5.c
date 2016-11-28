@@ -52,25 +52,36 @@ int free_mem(struct allocated_block *ab);
 int dispose(struct allocated_block *free_ab);
 int display_mem_usage();
 void do_exit();
-void swap(int,int);
-int find_process(int);
+void swap(int* , int*);
+struct allocated_block *find_process(int);
 
-int find_process(int pid)
+struct allocated_block *find_process(int pid)
 {
-
+    struct allocated_block *p;
+    p = allocated_block_head;
+    while(p!= NULL)
+    {
+        printf("test\n");
+        if(p->pid == pid)
+        {
+            return p;
+        }
+        p = p->next;
+    }
+    return NULL;
 }
 
 
-void swap(int a,int b)
+void swap(int* a,int*  b)
 {
-    int tmp;
+
+    int *tmp;
     tmp = a;
     a = b;
     b = tmp;
 }
 void do_exit()
 {
-
 }
 
 int main()
@@ -93,6 +104,7 @@ int main()
             case '0': do_exit(); exit(0);		//释放链表并退出
             default: break;
         }
+        getchar();
     }
 }
 
@@ -150,7 +162,8 @@ void set_algorithm()
     printf("\t2 - Best Fit \n");
     printf("\t3 - Worst Fit \n");
     scanf("%d", &algorithm);
-    if(algorithm>=1 && algorithm <=3) ma_algorithm=algorithm;
+    if(algorithm>=1 && algorithm <=3)
+        ma_algorithm=algorithm;
 	//按指定算法重新排列空闲区链表
     rearrange(ma_algorithm);
 }
@@ -186,8 +199,8 @@ void rearrange_FF()
             {
                 work=work->next;
             }
-            tmp=tmp->next;
         }
+        tmp=tmp->next;
     }
 }
 /*按BF算法重新整理内存空闲块链表*/
@@ -209,17 +222,23 @@ int new_process()
     int size;
     int ret;
     ab=(struct allocated_block *)malloc(sizeof(struct allocated_block));
-    if(!ab) exit(-5);
+    if(!ab)
+    {
+        exit(-5);
+    }
     ab->next = NULL;
     pid++;
     sprintf(ab->process_name, "PROCESS-%02d", pid);
     ab->pid = pid;
     printf("Memory for %s:", ab->process_name);
     scanf("%d", &size);
-    if(size>0) ab->size=size;
+    if(size>0)
+    {
+        ab->size=size;
+    }
     ret = allocate_mem(ab);  /* 从空闲区分配内存，ret==1表示分配ok*/
     /*如果此时allocated_block_head尚未赋值，则赋值*/
-    if((ret==1) &&(allocated_block_head == NULL))
+    if((ret==1) && (allocated_block_head == NULL))
     {
         allocated_block_head=ab;
         return 1;
@@ -249,13 +268,16 @@ int allocate_mem(struct allocated_block *ab)
         if(fbt->size>=request_size)/*分配后空闲空间足够大，则分割*/
         {
             //自行补充********
+            pre->start_addr += request_size;
+            pre->size-=request_size;
+            return 1;
         }
         pre = fbt;
         fbt = fbt->next;
     }
     return -1;
-    /*删除进程，归还分配的存储空间，并删除描述该进程内存分配的节点*/
 }
+/*删除进程，归还分配的存储空间，并删除描述该进程内存分配的节点*/
 void kill_process()
 {
     struct allocated_block *ab;
@@ -263,6 +285,7 @@ void kill_process()
     printf("Kill Process, pid=");
     scanf("%d", &pid);
     ab=find_process(pid);
+    printf("%d\n",ab->pid);
     if(ab!=NULL)
     {
         free_mem(ab); /*释放ab所表示的分配区*/
@@ -276,29 +299,32 @@ int free_mem(struct allocated_block *ab)
     struct free_block_type *fbt, *pre, *work;
 
     fbt=(struct free_block_type*) malloc(sizeof(struct free_block_type));
-    if(!fbt) return -1;
+    if(!fbt)
+    {
+        return -1;
+    }
     fbt->size = ab->size;
     fbt->start_addr = ab->start_addr;
     /*插入到空闲区链表的头部并将空闲区按地址递增的次序排列*/
     fbt->next = free_block;
     free_block=fbt;
     rearrange(MA_FF);
-    fbt=free_block;
-    while(fbt!=NULL)
+    pre=free_block;
+    while(pre!=NULL)
     {
-        work = fbt->next;
+        work = pre->next;
         if(work!=NULL)
         {
             /*如果当前空闲区与后面的空闲区相连，则合并*/
-            if(fbt->start_addr+fbt->size == work->start_addr)
+            if(pre->start_addr+pre->size == work->start_addr)
             {
-                fbt->size += work->size;
-                fbt->next = work->next;
+                pre->size += work->size;
+                pre->next = work->next;
                 free(work);
                 continue;
 		   }
         }
-        fbt = fbt->next;
+        pre = pre->next;
     }
     rearrange(algorithm); /*重新按当前的算法排列空闲区*/
     return 1;
