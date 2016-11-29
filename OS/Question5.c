@@ -61,7 +61,6 @@ struct allocated_block *find_process(int pid)
     p = allocated_block_head;
     while(p!= NULL)
     {
-        printf("test\n");
         if(p->pid == pid)
         {
             return p;
@@ -72,13 +71,12 @@ struct allocated_block *find_process(int pid)
 }
 
 
-void swap(int* a,int*  b)
+void swap(int *a,int  *b)
 {
-
-    int *tmp;
-    tmp = a;
-    a = b;
-    b = tmp;
+    int tmp;
+    tmp = *a;
+    *a = *b;
+    *b = tmp;
 }
 void do_exit()
 {
@@ -86,6 +84,9 @@ void do_exit()
 
 int main()
 {
+    int a = 10;
+    int b = 20;
+    swap(&a,&b);
     char choice;
     pid=0;
     free_block = init_free_block(mem_size); //初始化空闲区
@@ -192,13 +193,12 @@ void rearrange_FF()
         {
             if( work->start_addr < tmp->start_addr) /*地址递增*/
             {
+                printf("%d %d",work->start_addr,tmp->start_addr);
                 swap(&work->start_addr, &tmp->start_addr);
                 swap(&work->size, &tmp->size);
+                printf("%d %d",work->start_addr,tmp->start_addr);
             }
-            else
-            {
-                work=work->next;
-            }
+            work=work->next;
         }
         tmp=tmp->next;
     }
@@ -208,12 +208,48 @@ void rearrange_FF()
 void rearrange_BF()
 {
 	//请自行补充
+    struct free_block_type *tmp, *work;
+    printf("Rearrange free blocks for BF \n");
+    tmp = free_block;
+    while(tmp!=NULL)
+    {
+        work = tmp->next;
+        while(work!=NULL)
+        {
+            if( work->size < tmp->size) /*内存大小递增*/
+            {
+                printf("%d %d",work->start_addr,tmp->start_addr);
+                swap(&work->start_addr, &tmp->start_addr);
+                swap(&work->size, &tmp->size);
+                printf("%d %d",work->start_addr,tmp->start_addr);
+            }
+            work=work->next;
+        }
+        tmp=tmp->next;
+    }
 }
 /*按WF算法重新整理内存空闲块链表*/
 
 void rearrange_WF()
 {
     //请自行补充
+    struct free_block_type *tmp, *work;
+    printf("Rearrange free blocks for WF \n");
+    tmp = free_block;
+    while(tmp!=NULL)
+    {
+        work = tmp->next;
+        while(work!=NULL)
+        {
+            if( work->size > tmp->size) /*地址递减*/
+            {
+                swap(&work->start_addr, &tmp->start_addr);
+                swap(&work->size, &tmp->size);
+            }
+            work=work->next;
+        }
+        tmp=tmp->next;
+    }
 }
 /*创建新的进程，主要是获取内存的申请数量*/
 int new_process()
@@ -268,8 +304,9 @@ int allocate_mem(struct allocated_block *ab)
         if(fbt->size>=request_size)/*分配后空闲空间足够大，则分割*/
         {
             //自行补充********
-            pre->start_addr += request_size;
-            pre->size-=request_size;
+            ab->start_addr = fbt->start_addr;
+            fbt->start_addr += request_size;
+            fbt->size-= request_size;
             return 1;
         }
         pre = fbt;
@@ -285,7 +322,6 @@ void kill_process()
     printf("Kill Process, pid=");
     scanf("%d", &pid);
     ab=find_process(pid);
-    printf("%d\n",ab->pid);
     if(ab!=NULL)
     {
         free_mem(ab); /*释放ab所表示的分配区*/
