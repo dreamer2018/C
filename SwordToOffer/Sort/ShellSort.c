@@ -10,20 +10,23 @@
 void ShellSort(int data[], int len)
 {
     int i,j,k;
-    for(i=len/2;i>0;len/=2)
+    //改变缩进量
+    for(i=len/2;i>0;i/=2)
     {
         for(j=0;j<i;j++)
         {
             for(k=j+i;k<len;k+=i)
             {
-                if(data[k] >= data[k-i])
+                if(data[k] < data[k-i])
                 {
-                    int tmp=data[k];
+                    int tmp = data[k];
                     int h=k-i;
-                    while(k>=0 && a[h] > tmp)
+                    while(h>=0 && data[h] > tmp)
                     {
-
+                        data[h+i]=data[h];
+                        h-=i;
                     }
+                    data[h+i]=tmp;
                 }
             }
         }
@@ -41,5 +44,7 @@ void Print(int data[], int len)
 int main()
 {
     int data[]={4,6,2,1,5,3,4,1,2,3};
+    Print(data,10);
     ShellSort(data,10);
+    Print(data,10);
 }
