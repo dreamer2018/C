@@ -24,6 +24,7 @@ void get_input(char *buf);
 void print_prompt();
 void my_cd(char *arg);
 
+
 void print_prompt() //打印myshell的提示符
 {
     int i,j,n;
@@ -43,7 +44,7 @@ void print_prompt() //打印myshell的提示符
             buf[i]=swap[j];
         }
     }
-    else
+    else //如果不是上面两种特殊情况，则正常显示路经
     {
         strcpy(buf,swap); 
     }
@@ -51,8 +52,9 @@ void print_prompt() //打印myshell的提示符
 }
 void get_input(char *buf)/*获得用户输入的待执行命令，参数buf存放输入的命令，如果命令过长，则报错退出，输入的以换行结束*/
 {
+    /*buf 最大长度为256个字符*/
     int i=0;
-    while(1)
+    while(i<256)
     {
         buf[i]=getchar();
         if(buf[i]=='\n')
@@ -68,6 +70,7 @@ void get_input(char *buf)/*获得用户输入的待执行命令，参数buf存�
 int explain_input(char *buf,char arglist[][256]) //解析buf中的命令，每个选项都存放在arglist中
 {
     int i=0,j=0,k=0;
+
     while(buf[i]!='\n')
     {
         if(buf[i]==' ')
@@ -84,13 +87,14 @@ int explain_input(char *buf,char arglist[][256]) //解析buf中的命令，每�
         }
         k++;
     }
+    /*k用来记录读取的参数个数*/
     return k;
 }
 int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount为待执行的命令个数
 {
     int flag=0;
     int i;
-    int how=0;
+    int how=0; 
     int background=0;     //后台运行标识
     char *arg[argcount+1]; //程序运行参数保存
     char *argnext[argcount+1]; //管道的第二个程序运行参数保存
@@ -104,15 +108,19 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
        arg[i]=arglist[i];
     }
     arg[argcount]=NULL;
+    //判断命令是否为shell内建命令cd
     if(!strcmp(arg[0],"cd"))
     {
+        //如果有参数
         if(argcount>1)
         {
+            // - 表示上次的路经
             if(!strcmp(arg[1],"-"))
             {
                 printf("\n%s\n\n",pre_path);
                 strcpy(arg[1],pre_path);
             }
+            // ~ 表示家目录
             if(!strcmp(arg[1],"~"))
             {
                 strcpy(arg[1],getenv("HOME"));
@@ -126,10 +134,17 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
         my_cd(path);
         return 0;
     }
+    /*
+    * 其他非shell内建命令
+    *
+    */
+
+    //是否使用后台标识符 &
     for(i=0;i<argcount;i++)
     {
         if(strncmp(arg[i],"&",1)==0)
         {
+            // & 要使用在末尾才表示后台命令，否则表示出错
             if(i==argcount-1)
             {
                 background=1;
@@ -158,24 +173,30 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
         {
             flag++;
             how=4;
+            // 如果 > 后面的参数为空，则意味着命令出错！
             if(arg[i+1]==NULL || i==0)
             {
                 flag++;
             }
         }
-        if(!strcmp(arg[i],"<"))
+        if(!strcmp(arg[i],"<")) //输入重定向
         {
             flag++;
             how=2;
-            if(i==0 ||arg[i+1]==NULL)
+            // 如果 >> 后面的参数为空，则意味着命令出错
+            if(i==0 || arg[i+1]==NULL)
+            {
                 flag++;
+            }
         }
-        if(strcmp(arg[i],"|")==0)
+        if(strcmp(arg[i],"|")==0) //管道
         {
             flag++;
             how=3;
             if(arg[i+1]==NULL||i==0)
+            {
                 flag++;
+            }
         }
     }
     if(flag>1)
@@ -183,6 +204,7 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
         printf("Command Error\n");
         return 0;
     }
+    // >
     if(how==1)
     {
         for(i=0;arg[i]!=NULL;i++)
@@ -194,6 +216,7 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
             }
         }
     }
+    // <
     if(how==2)
     {
         for(i=0;arg[i]!=NULL;i++)
@@ -205,6 +228,7 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
             }
         }
     }
+    // >>
     if(how==4)
     {
         for(i=0;arg[i]!=NULL;i++)
@@ -216,6 +240,7 @@ int do_cmd(int argcount,char arglist[100][256]) //执行arglist命令，argcount
             }
         }
     }
+    // |
     if(how==3)
     {
         for(i=0;arg[i]!=NULL;i++)
